@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Commonplace Book - David Kendall Casey</title>
+    <link href="https://fonts.cdnjs.com/css2?family=Sorts+Mill+Goudy:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: black;
+            color: white;
+            font-family: 'Sorts Mill Goudy', Georgia, serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            font-size: 18px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 6rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: normal;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: normal;
+            margin: 2rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        nav a:hover {
+            opacity: 0.7;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .category-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .category-link {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            line-height: 2;
+            transition: opacity 0.3s;
+        }
+
+        .category-link:hover {
+            opacity: 0.7;
+        }
+
+        .category-count {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            margin-left: 0.5em;
+        }
+
+        .introduction {
+            margin: 3rem 0;
+            padding: 2rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
+            .categories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            nav a {
+                display: block;
+                margin: 0.5rem 0;
+            }
+
+            header {
+                padding: 3rem 1rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>David Kendall Casey</h1>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="commonplace.html">Commonplace Book</a>
+        <a href="#">Writing</a>
+        <a href="#">Speaking</a>
+        <a href="#">Research</a>
+    </nav>
+
+    <main class="container">
+        <h2>Commonplace Book</h2>
+
+        <div class="introduction">
+            <p>A collection of quotes and passages organized by theme.</p>
+        </div>
+
+        <div class="categories-grid">
+            <div>
+                <div class="category-item">
+                    <a href="on-age.html" class="category-link">On Age</a>
+                </div>
+                <div class="category-item">
+                    <a href="on-art.html" class="category-link">On Art</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Beauty</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Benevolence</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Crime & Punishment</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Culture</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Death</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Education</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Existence</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Friendship</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Greatness</a>
+                </div>
+            </div>
+            <div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Hate</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Health, Illness & Medicine</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Hope</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Introversion</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Joy</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Justice</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Language</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Love</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Manners</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Mercy</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Mind</a>
+                </div>
+            </div>
+            <div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Money & Wealth</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Morality</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On the Past</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Philosophy</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Reading</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Suffering, Sorrow & Grief</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On the Sublime</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Truth & Knowledge</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On War</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Work</a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-link">On Writing</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
