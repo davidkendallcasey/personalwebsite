@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>David Kendall Casey</title>
+    <link href="https://fonts.cdnjs.com/css2?family=Sorts+Mill+Goudy:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: black;
+            color: white;
+            font-family: 'Sorts Mill Goudy', Georgia, serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            font-size: 18px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 6rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: normal;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: normal;
+            margin: 2rem 0;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: normal;
+            margin: 2rem 0;
+        }
+
+        nav {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        nav a:hover {
+            opacity: 0.7;
+        }
+
+        blockquote {
+            border-left: 2px solid white;
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .source {
+            text-align: right;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 1rem;
+        }
+
+        .work-title {
+            font-style: italic;
+        }
+
+        .quote-container {
+            margin-bottom: 4rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            margin-left: 0.5em;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
+            nav a {
+                display: block;
+                margin: 0.5rem 0;
+            }
+
+            header {
+                padding: 3rem 1rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+    <script>
+        const quotes = [
+            {
+                text: "Art is not difficult because it wishes to be difficult, but because it wishes to be art. However much the writer might long to be, in his work, simple, honest, and straightforward, these virtues are no longer available to him. He discovers that in being simple, honest, and straightforward, nothing much happens: he speaks the speakable, whereas what we are looking for is the as-yet unspeakable, the as-yet unspoken.",
+                source: "Donald Barthelme",
+                work: "Not Knowing",
+                category: "On Art"
+            },
+            {
+                text: "As all the external sources of happiness and pleasure are, by their nature, highly uncertain, doubtful, ephemeral, and subject to chance, they dry up in certain circumstances; moreover, this is inevitable, as they cannot always be at hand. In old age, they almost all inevitable decline; for it is then that we are abandoned by love, banter, the pleasures of travelling and horse riding, as well as the aptitude to play a part in the world, and even by our friends and relatives who are taken from us by death. It is then, more than ever, that there returns the question of knowing what every man has for himself, because that is what will last the longest.",
+                source: "Arthur Schopenhauer",
+                work: null,
+                category: "On Age"
+            }
+            // More quotes will be added here
+        ];
+
+        function getRandomForToday() {
+            const today = new Date();
+            const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+            return seed;
+        }
+
+        function getDailyQuote() {
+            const seed = getRandomForToday();
+            const index = seed % quotes.length;
+            return quotes[index];
+        }
+
+        function displayDailyQuote() {
+            const quote = getDailyQuote();
+            const quoteContainer = document.getElementById('quote-container');
+            
+            let sourceText = quote.source;
+            if (quote.work) {
+                sourceText += `, <span class="work-title">${quote.work}</span>`;
+            }
+
+            quoteContainer.innerHTML = `
+                <h3>Daily Quote <span class="category-label">(from ${quote.category})</span></h3>
+                <blockquote>${quote.text}</blockquote>
+                <p class="source">${sourceText}</p>
+            `;
+        }
+
+        window.addEventListener('load', displayDailyQuote);
+    </script>
+</head>
+<body>
+    <header>
+        <h1>David Kendall Casey</h1>
+        <p class="subtitle">Medical Student, Writer</p>
+    </header>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="commonplace.html">Commonplace Book</a>
+        <a href="#">Writing</a>
+        <a href="#">Speaking</a>
+        <a href="#">Research</a>
+    </nav>
+
+    <main class="container">
+        <div id="quote-container" class="quote-container">
+            <!-- Quote will be inserted here by JavaScript -->
+        </div>
+    </main>
+</body>
+</html>
