@@ -126,62 +126,73 @@
         }
     </style>
    <script>
-	// Function to grab all blockquotes and display a random one
-	function displayDailyQuote() {
-	  // Select all blockquote elements on the page
-	  const blockquotes = document.querySelectorAll('.quote-entry');
-	  
-	  // Check if there are any quotes on the page
-	  if (blockquotes.length > 0) {
-		// Get the current time in milliseconds
-		const currentTime = new Date().getTime();
+	// Function to fetch quotes from a specified URL
+	async function fetchQuotesFromPage(url) {
+	  try {
+		const response = await fetch(url);
+		const text = await response.text();
 
-		// Retrieve the time of the last quote change and the last quote index from localStorage
-		const lastQuoteTime = localStorage.getItem('lastQuoteTime');
-		const lastQuoteIndex = localStorage.getItem('lastQuoteIndex');
+		// Create a temporary DOM parser to extract blockquotes
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(text, 'text/html');
+		const quotes = doc.querySelectorAll('.quote-entry');
 		
-		// If more than 24 hours have passed (86400000 ms), choose a new quote
-		if (!lastQuoteTime || currentTime - lastQuoteTime > 86400000) {
-		  // Pick a new random index from the blockquotes
-		  const randomIndex = Math.floor(Math.random() * blockquotes.length);
-		  
-		  // Get the quote text (inside the blockquote tag)
-		  const quoteText = blockquotes[randomIndex].querySelector('blockquote').textContent.trim();
-		  
-		  // Get the author and work title from the 'source' paragraph
-		  const sourceText = blockquotes[randomIndex].querySelector('.source').textContent.trim();
-		  
-		  // Display the quote in the "quote-of-the-day" section
-		  document.getElementById('quote-text').textContent = `"${quoteText}"`;
-
-		  // Display the source (author and work title)
-		  document.getElementById('quote-source').textContent = `— ${sourceText}`;
-		  
-		  // Save the new quote index and the current time in localStorage
-		  localStorage.setItem('lastQuoteIndex', randomIndex);
-		  localStorage.setItem('lastQuoteTime', currentTime);
-		} else {
-		  // If within the 24-hour period, use the last displayed quote index
-		  const previousQuoteIndex = lastQuoteIndex;
-		  
-		  // Get the quote text (inside the blockquote tag)
-		  const quoteText = blockquotes[previousQuoteIndex].querySelector('blockquote').textContent.trim();
-		  
-		  // Get the author and work title from the 'source' paragraph
-		  const sourceText = blockquotes[previousQuoteIndex].querySelector('.source').textContent.trim();
-		  
-		  // Display the quote in the "quote-of-the-day" section
-		  document.getElementById('quote-text').textContent = `"${quoteText}"`;
-
-		  // Display the source (author and work title)
-		  document.getElementById('quote-source').textContent = `— ${sourceText}`;
-		}
+		return Array.from(quotes); // Return quotes as an array
+	  } catch (error) {
+		console.error(`Failed to fetch quotes from ${url}:`, error);
+		return [];
 	  }
+	}
+
+	// Function to display a daily random quote
+	async function displayDailyQuote() {
+	  const pagesToSearch = ['commonplace.html', 'on-art.html', 'on-age.html']; // Add all your pages here
+	  let allQuotes = [];
+
+	  // Fetch quotes from all specified pages
+	  for (const page of pagesToSearch) {
+		const quotes = await fetchQuotesFromPage(page);
+		allQuotes = allQuotes.concat(quotes);
+	  }
+
+	  // If no quotes were found, log an error
+	  if (allQuotes.length === 0) {
+		console.error('No quotes found on specified pages.');
+		return;
+	  }
+
+	  // Get the current time in milliseconds
+	  const currentTime = new Date().getTime();
+
+	  // Retrieve the time of the last quote change and the last quote index from localStorage
+	  const lastQuoteTime = localStorage.getItem('lastQuoteTime');
+	  const lastQuoteIndex = localStorage.getItem('lastQuoteIndex');
+	  
+	  let randomIndex;
+
+	  // If more than 24 hours have passed, select a new quote
+	  if (!lastQuoteTime || currentTime - lastQuoteTime > 86400000) {
+		randomIndex = Math.floor(Math.random() * allQuotes.length);
+		localStorage.setItem('lastQuoteIndex', randomIndex);
+		localStorage.setItem('lastQuoteTime', currentTime);
+	  } else {
+		randomIndex = parseInt(lastQuoteIndex, 10);
+	  }
+
+	  // Extract the selected quote
+	  const selectedQuote = allQuotes[randomIndex];
+	  const quoteText = selectedQuote.querySelector('blockquote').textContent.trim();
+	  const sourceText = selectedQuote.querySelector('.source').textContent.trim();
+
+	  // Display the quote
+	  document.getElementById('quote-text').textContent = `"${quoteText}"`;
+	  document.getElementById('quote-source').textContent = `— ${sourceText}`;
 	}
 
 	// Call the function when the page loads
 	window.onload = displayDailyQuote;
-	</script>
+</script>
+
 </head>
 <body>
     <header>
