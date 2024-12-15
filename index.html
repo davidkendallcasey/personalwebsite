@@ -51,6 +51,7 @@
             text-align: center;
             padding: 1.5rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			margin-bottom: 0.5in;
         }
 
         nav a {
@@ -136,8 +137,12 @@
 		const parser = new DOMParser();
 		const doc = parser.parseFromString(text, 'text/html');
 		const quotes = doc.querySelectorAll('.quote-entry');
-		
-		return Array.from(quotes); // Return quotes as an array
+
+		// Return quotes as an array of objects including the source URL
+		return Array.from(quotes).map(quote => ({
+		  element: quote,
+		  sourcePage: url
+		}));
 	  } catch (error) {
 		console.error(`Failed to fetch quotes from ${url}:`, error);
 		return [];
@@ -181,10 +186,15 @@
 
 	  // Extract the selected quote
 	  const selectedQuote = allQuotes[randomIndex];
-	  const quoteText = selectedQuote.querySelector('blockquote').textContent.trim();
-	  const sourceText = selectedQuote.querySelector('.source').textContent.trim();
+	  const quoteText = selectedQuote.element.querySelector('blockquote').textContent.trim();
+	  const sourceText = selectedQuote.element.querySelector('.source').textContent.trim();
+
+	  // Extract the page name from the URL
+	  const pageName = selectedQuote.sourcePage.split('/').pop().split('.')[0].replace(/-/g, ' ');
+	  const pageHeader = `From '${pageName.charAt(0).toUpperCase() + pageName.slice(1)}'`;
 
 	  // Display the quote
+	  document.getElementById('quote-header').textContent = pageHeader;
 	  document.getElementById('quote-text').textContent = `"${quoteText}"`;
 	  document.getElementById('quote-source').textContent = `— ${sourceText}`;
 	}
@@ -210,6 +220,7 @@
 
     <main class="container">
         <div id="quote-of-the-day">
+			<p id="quote-header"></p> <!-- This is the new header for the source page -->
 			<blockquote id="quote-text"></blockquote>
 			<p id="quote-source"></p>
 		</div>
