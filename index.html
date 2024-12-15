@@ -125,53 +125,63 @@
             }
         }
     </style>
-    <script>
-        const quotes = [
-            {
-                text: "Art is not difficult because it wishes to be difficult, but because it wishes to be art. However much the writer might long to be, in his work, simple, honest, and straightforward, these virtues are no longer available to him. He discovers that in being simple, honest, and straightforward, nothing much happens: he speaks the speakable, whereas what we are looking for is the as-yet unspeakable, the as-yet unspoken.",
-                source: "Donald Barthelme",
-                work: "Not Knowing",
-                category: "On Art"
-            },
-            {
-                text: "As all the external sources of happiness and pleasure are, by their nature, highly uncertain, doubtful, ephemeral, and subject to chance, they dry up in certain circumstances; moreover, this is inevitable, as they cannot always be at hand. In old age, they almost all inevitable decline; for it is then that we are abandoned by love, banter, the pleasures of travelling and horse riding, as well as the aptitude to play a part in the world, and even by our friends and relatives who are taken from us by death. It is then, more than ever, that there returns the question of knowing what every man has for himself, because that is what will last the longest.",
-                source: "Arthur Schopenhauer",
-                work: null,
-                category: "On Age"
-            }
-            // More quotes will be added here
-        ];
+   <script>
+	// Function to grab all blockquotes and display a random one
+	function displayDailyQuote() {
+	  // Select all blockquote elements on the page
+	  const blockquotes = document.querySelectorAll('.quote-entry');
+	  
+	  // Check if there are any quotes on the page
+	  if (blockquotes.length > 0) {
+		// Get the current time in milliseconds
+		const currentTime = new Date().getTime();
 
-        function getRandomForToday() {
-            const today = new Date();
-            const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-            return seed;
-        }
+		// Retrieve the time of the last quote change and the last quote index from localStorage
+		const lastQuoteTime = localStorage.getItem('lastQuoteTime');
+		const lastQuoteIndex = localStorage.getItem('lastQuoteIndex');
+		
+		// If more than 24 hours have passed (86400000 ms), choose a new quote
+		if (!lastQuoteTime || currentTime - lastQuoteTime > 86400000) {
+		  // Pick a new random index from the blockquotes
+		  const randomIndex = Math.floor(Math.random() * blockquotes.length);
+		  
+		  // Get the quote text (inside the blockquote tag)
+		  const quoteText = blockquotes[randomIndex].querySelector('blockquote').textContent.trim();
+		  
+		  // Get the author and work title from the 'source' paragraph
+		  const sourceText = blockquotes[randomIndex].querySelector('.source').textContent.trim();
+		  
+		  // Display the quote in the "quote-of-the-day" section
+		  document.getElementById('quote-text').textContent = `"${quoteText}"`;
 
-        function getDailyQuote() {
-            const seed = getRandomForToday();
-            const index = seed % quotes.length;
-            return quotes[index];
-        }
+		  // Display the source (author and work title)
+		  document.getElementById('quote-source').textContent = `— ${sourceText}`;
+		  
+		  // Save the new quote index and the current time in localStorage
+		  localStorage.setItem('lastQuoteIndex', randomIndex);
+		  localStorage.setItem('lastQuoteTime', currentTime);
+		} else {
+		  // If within the 24-hour period, use the last displayed quote index
+		  const previousQuoteIndex = lastQuoteIndex;
+		  
+		  // Get the quote text (inside the blockquote tag)
+		  const quoteText = blockquotes[previousQuoteIndex].querySelector('blockquote').textContent.trim();
+		  
+		  // Get the author and work title from the 'source' paragraph
+		  const sourceText = blockquotes[previousQuoteIndex].querySelector('.source').textContent.trim();
+		  
+		  // Display the quote in the "quote-of-the-day" section
+		  document.getElementById('quote-text').textContent = `"${quoteText}"`;
 
-        function displayDailyQuote() {
-            const quote = getDailyQuote();
-            const quoteContainer = document.getElementById('quote-container');
-            
-            let sourceText = quote.source;
-            if (quote.work) {
-                sourceText += `, <span class="work-title">${quote.work}</span>`;
-            }
+		  // Display the source (author and work title)
+		  document.getElementById('quote-source').textContent = `— ${sourceText}`;
+		}
+	  }
+	}
 
-            quoteContainer.innerHTML = `
-                <h3>Daily Quote <span class="category-label">(from ${quote.category})</span></h3>
-                <blockquote>${quote.text}</blockquote>
-                <p class="source">${sourceText}</p>
-            `;
-        }
-
-        window.addEventListener('load', displayDailyQuote);
-    </script>
+	// Call the function when the page loads
+	window.onload = displayDailyQuote;
+	</script>
 </head>
 <body>
     <header>
