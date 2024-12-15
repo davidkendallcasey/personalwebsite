@@ -206,7 +206,7 @@
 
 		  // Format and display the header
 		  const header = document.getElementById('quote-header');
-		  header.innerHTML = `From <a href="commonplace.html" target="_blank">Commonplace Book</a>, '${pageName.charAt(0).toUpperCase() + pageName.slice(1)}'`;
+		  header.innerHTML = `From <a href="commonplace.html" target="_blank" style="color: inherit; text-decoration: none;">Commonplace Book</a>, "${pageName.charAt(0).toUpperCase() + pageName.slice(1)}"`;
 
 		  // Display the quote
 		  document.getElementById('quote-text').textContent = `${quoteText}`;
