@@ -135,7 +135,78 @@
             h1 {
                 font-size: 2.5rem;
             }
+			.search-container {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 1rem;
+            width: 100%;
+            background: #ffffff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
+
+        .search-form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-width: 600px;
+            margin: 0.5rem auto;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .result-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .result-item:hover {
+            background: #f5f5f5;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-preview {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .highlight {
+            background-color: yellow;
+            padding: 0 2px;
+    }
     </style>
    <script>
 			// Function to fetch quotes from a specified URL
@@ -216,12 +287,149 @@
 		// Call the function when the page loads
 		window.onload = displayDailyQuote;
 	</script>
+	<script>
+        let searchIndex = null;
 
+        // Load the search index when the page loads
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('/search-index.json');
+                searchIndex = await response.json();
+            } catch (error) {
+                console.error('Failed to load search index:', error);
+            }
+        });
+
+        // Debounce function to limit search frequency
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        // Handle search input with debounce
+        const debounceSearch = debounce((event) => {
+            const searchTerm = event.target.value;
+            if (searchTerm.length >= 2) {
+                performSearch(searchTerm);
+            } else {
+                hideResults();
+            }
+        }, 300);
+
+        // Handle form submission
+        function handleSearch(event) {
+            event.preventDefault();
+            const searchTerm = event.target.querySelector('input').value;
+            if (searchTerm) {
+                performSearch(searchTerm);
+            }
+        }
+
+        // Perform the search
+        function performSearch(searchTerm) {
+            if (!searchIndex) {
+                displayResults([{
+                    title: 'Error',
+                    preview: 'Search index not loaded. Please try again later.',
+                    url: '#'
+                }]);
+                return;
+            }
+
+            const searchRegex = new RegExp(searchTerm, 'gi');
+            const results = searchIndex
+                .filter(page => {
+                    return page.title.match(searchRegex) || 
+                           page.content.match(searchRegex);
+                })
+                .map(page => {
+                    // Find the first match in content for preview
+                    const contentMatch = page.content.toLowerCase().indexOf(searchTerm.toLowerCase());
+                    let preview = page.preview;
+                    
+                    if (contentMatch !== -1) {
+                        const start = Math.max(0, contentMatch - 50);
+                        const end = Math.min(page.content.length, contentMatch + 100);
+                        preview = '...' + page.content.slice(start, end) + '...';
+                    }
+                    
+                    // Highlight matches
+                    preview = preview.replace(searchRegex, match => 
+                        `<span class="highlight">${match}</span>`
+                    );
+                    
+                    return {
+                        title: page.title.replace(searchRegex, match => 
+                            `<span class="highlight">${match}</span>`
+                        ),
+                        preview,
+                        url: page.url
+                    };
+                })
+                .slice(0, 5); // Limit to top 5 results
+
+            displayResults(results);
+        }
+
+        // Display search results
+        function displayResults(results) {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="result-item">No results found</div>';
+                resultsContainer.style.display = 'block';
+                return;
+            }
+            
+            results.forEach(result => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.innerHTML = `
+                    <div class="result-title">${result.title}</div>
+                    <div class="result-preview">${result.preview}</div>
+                `;
+                resultItem.addEventListener('click', () => {
+                    window.location.href = result.url;
+                });
+                resultsContainer.appendChild(resultItem);
+            });
+            
+            resultsContainer.style.display = 'block';
+        }
+
+        // Hide results container
+        function hideResults() {
+            document.getElementById('searchResults').style.display = 'none';
+        }
+
+        // Close results when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.search-container')) {
+                hideResults();
+            }
+        });
+    </script>
 </head>
 <body>
     <header>
         <h1>David Kendall Casey</h1>
         <p class="subtitle">Medical Student, Writer</p>
+		 <div class="search-container">
+        <form class="search-form" onsubmit="handleSearch(event)">
+            <input 
+                type="search" 
+                class="search-input" 
+                placeholder="Search entire site..." 
+                aria-label="Search"
+                onkeyup="debounceSearch(event)"
+            >
+        </form>
+        <div class="search-results" id="searchResults"></div>
+    </div>
     </header>
 
     <nav>
