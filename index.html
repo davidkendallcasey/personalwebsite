@@ -208,83 +208,98 @@
     }
     </style>
    <script>
-			// Function to fetch quotes from a specified URL
-		async function fetchQuotesFromPage(url) {
-		  try {
-			const response = await fetch(url);
-			const text = await response.text();
+			async function displayDailyQuote() {
+    const pages = [
+        'on-art.html',
+        'on-age.html',
+        'on-beauty.html',
+		'on-benevolence.html',
+		'on-crime-and-punishment.html',
+		'on-culture.html',
+		'on-suffering.html',
+		'on-existence.html',
+		'on-death.html',
+		'on-education.html'
+    ];
 
-			// Create a temporary DOM parser to extract blockquotes
-			const parser = new DOMParser();
-			const doc = parser.parseFromString(text, 'text/html');
-			const quotes = doc.querySelectorAll('.quote-entry');
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
 
-			// Return quotes as an array of objects including the source URL
-			return Array.from(quotes).map(quote => ({
-			  element: quote,
-			  sourcePage: url
-			}));
-		  } catch (error) {
-			console.error(`Failed to fetch quotes from ${url}:`, error);
-			return [];
-		  }
-		}
+    // Check localStorage for the last displayed quote date and index
+    const storedData = JSON.parse(localStorage.getItem('dailyQuote')) || {};
+    if (storedData.date === today) {
+        // If the date matches, use the stored quote data
+        displayQuote(storedData.quoteHTML, storedData.sourceText, storedData.pageName, storedData.pageURL);
+        return;
+    }
 
-		// Function to display a daily random quote
-		async function displayDailyQuote() {
-		  const pagesToSearch = ['commonplace.html', 'on-art.html', 'on-age.html', 'on-beauty.html', 'on-benevolence.html', 'on-crime-and-punishment.html', 'on-culture.html', 'on-suffering.html', 'on-existence.html', 'on-death.html', 'on-education.html',]; // Add all your pages here
-		  let allQuotes = [];
+    // Pick a random page
+    const randomIndex = Math.floor(Math.random() * pages.length);
+    const selectedPage = pages[randomIndex];
 
-		  // Fetch quotes from all specified pages
-		  for (const page of pagesToSearch) {
-			const quotes = await fetchQuotesFromPage(page);
-			allQuotes = allQuotes.concat(quotes);
-		  }
+    try {
+        // Fetch the content of the selected page
+        const response = await fetch(selectedPage);
+        const pageContent = await response.text();
 
-		  // If no quotes were found, log an error
-		  if (allQuotes.length === 0) {
-			console.error('No quotes found on specified pages.');
-			return;
-		  }
+        // Parse the fetched HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(pageContent, 'text/html');
 
-		  // Get the current time in milliseconds
-		  const currentTime = new Date().getTime();
+        // Get all quotes from the page
+        const quotes = doc.querySelectorAll('blockquote');
+        if (!quotes.length) {
+            console.error(`No quotes found in ${selectedPage}`);
+            return;
+        }
 
-		  // Retrieve the time of the last quote change and the last quote index from localStorage
-		  const lastQuoteTime = localStorage.getItem('lastQuoteTime');
-		  const lastQuoteIndex = localStorage.getItem('lastQuoteIndex');
-		  
-		  let randomIndex;
+        // Pick a random quote
+        const randomQuoteIndex = Math.floor(Math.random() * quotes.length);
+        const selectedQuote = quotes[randomQuoteIndex];
 
-		  // If more than 24 hours have passed, select a new quote
-		  if (!lastQuoteTime || currentTime - lastQuoteTime > 86400000) {
-			randomIndex = Math.floor(Math.random() * allQuotes.length);
-			localStorage.setItem('lastQuoteIndex', randomIndex);
-			localStorage.setItem('lastQuoteTime', currentTime);
-		  } else {
-			randomIndex = parseInt(lastQuoteIndex, 10);
-		  }
+        // Extract the quote content and source
+        const quoteHTML = selectedQuote.innerHTML; // Preserve formatting
+        const sourceElement = selectedQuote.querySelector('.source');
+        const sourceText = sourceElement ? sourceElement.textContent.trim() : 'Unknown Source';
 
-		  // Extract the selected quote
-		  const selectedQuote = allQuotes[randomIndex];
-		  const quoteText = selectedQuote.element.querySelector('blockquote').textContent.trim();
-		  const sourceText = selectedQuote.element.querySelector('.source').textContent.trim();
+        // Extract the page name for the header
+        const pageName = selectedPage.split('/').pop().split('.')[0].replace(/-/g, ' ');
+        const formattedPageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
 
-		  // Extract the page name from the URL
-		  const pageName = selectedQuote.sourcePage.split('/').pop().split('.')[0].replace(/-/g, ' ');
-		  const pageHeader = `From '${pageName.charAt(0).toUpperCase() + pageName.slice(1)}'`;
+        // Save the quote data to localStorage
+        localStorage.setItem('dailyQuote', JSON.stringify({
+            date: today,
+            quoteHTML,
+            sourceText,
+            pageName: formattedPageName,
+            pageURL: selectedPage
+        }));
 
-		  // Format and display the header
-		  const header = document.getElementById('quote-header');
-		  header.innerHTML = `From <a href="commonplace.html" target="_blank" style="color: inherit; text-decoration: none;">Commonplace Book</a>, &ldquo;${pageName.charAt(0).toUpperCase() + pageName.slice(1)}&rdquo;`;
+        // Display the quote
+        displayQuote(quoteHTML, sourceText, formattedPageName, selectedPage);
+    } catch (error) {
+        console.error('Error fetching or processing the quote:', error);
+    }
+}
 
-		  // Display the quote
-		  document.getElementById('quote-text').textContent = `${quoteText}`;
-		  document.getElementById('quote-source').textContent = `— ${sourceText}`;
-		}
+function displayQuote(quoteHTML, sourceText, pageName, pageURL) {
+    // Display the quote content
+    const quoteText = document.getElementById('quote-text');
+    quoteText.innerHTML = quoteHTML;
 
-		// Call the function when the page loads
-		window.onload = displayDailyQuote;
+    // Display the source
+    const quoteSource = document.getElementById('quote-source');
+    quoteSource.textContent = `— ${sourceText}`;
+
+    // Update the header with the page name
+    const header = document.getElementById('quote-header');
+    header.innerHTML = `From <a href="${pageURL}" target="_blank" style="color: inherit; text-decoration: none;">${pageName}</a>`;
+}
+
+// Ensure the quote is displayed when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    displayDailyQuote();
+});
 	</script>
 	<script>
         let searchIndex = null;
