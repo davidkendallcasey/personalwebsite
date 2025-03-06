@@ -202,5 +202,25 @@ blockquote {
 .highlight {
             background-color: yellow;
             padding: 0 2px;
-    }
+}
+	/* Grid layout for the commonplace index categories */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+}
+
+/* Style for each category item */
+.category-item {
+  margin-bottom: 15px;
+}
+
+/* Style for the category links */
+.category-link {
+  display: block;
+  text-decoration: none;
+  padding: 8px 12px;
+  /* Add other styling like colors, borders, etc. */
+}
 	
