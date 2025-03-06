@@ -40,7 +40,8 @@ h2 {
         }
 
 h3 {
-			font-family: 'TeX Gyre Schola', serif;
+			font-family: 'Libertinus Serif', serif;
+			color: lightgray;
             font-size: 1.5rem;
             font-weight: normal;
             margin: 2rem 0;
