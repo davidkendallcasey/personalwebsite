@@ -41,7 +41,7 @@ h1 {
 h2 {
 			font-family: 'TeX Gyre Schola', serif;
 			color: white;
-            font-size: 2.2rem;
+            font-size: 2.5rem;
 			font-style: italic;
             font-weight: normal;
 			text-align: center;
@@ -53,7 +53,7 @@ h2 {
 h3 {
 			font-family: 'Sorts Mill Goudy', serif;
 			color: lightgray;
-            font-size: 1.5rem;
+            font-size: 2.0rem;
             font-weight: normal;
             margin: 2rem 0;
         }
@@ -77,7 +77,7 @@ nav a:hover {
         }
 
 blockquote {
-			color: rgba(255, 255, 255, 0.9); /* White with 90% opacity */
+			color: white; /* White with 90% opacity */
             border-left: 2px solid white;
             margin: 0;
             padding-left: 1.5rem;
@@ -85,7 +85,7 @@ blockquote {
 
 .source {
             text-align: right;
-            color: rgba(255, 255, 255, 0.6);
+            color: white;
             margin-top: 1rem;
         }
 
@@ -150,7 +150,7 @@ blockquote {
 			position: fixed;
 			top: 0;
 			right: 0;
-			padding: 2rem;
+			padding: 1rem;
 			width: auto;
 			background: transparent; 
 			box-shadow: none; 
