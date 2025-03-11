@@ -15,8 +15,8 @@ body {
         }
 		
 .divider {
-  width: 50%; /* Makes it centered */
-  margin: 20px auto;
+  width: 35%; /* Makes it centered */
+  margin: 30px auto; /* Padding on top and bottom */
   border: none;
   height: 1px;
   background-color: red;
@@ -46,7 +46,7 @@ h2 {
 			font-style: italic;
             font-weight: normal;
 			text-align: center;
-            margin: 2rem 0;
+            margin: 1rem 0;
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -56,7 +56,7 @@ h3 {
 			color: lightgray;
             font-size: 2.0rem;
             font-weight: normal;
-            margin: 2rem 0;
+            margin: 1rem 0;
         }
 nav {
             text-align: center;
