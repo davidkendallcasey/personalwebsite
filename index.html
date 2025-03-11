@@ -3,129 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <title>David Kendall Casey</title>
-	<link rel="stylesheet" href="stylesheet.css">
-   <script>
-			async function displayDailyQuote() {
-    const pages = [
-        'on-animals.html',
-		'on-art.html',
-        'on-age.html',
-        'on-beauty.html',
-		'on-benevolence.html',
-		'on-crime-and-punishment.html',
-		'on-culture-and-politics.html',
-		'on-existence.html',
-		'on-death.html',
-		'on-education.html',
-		'on-friendship.html',
-		'on-greatness.html',
-		'on-hate.html',
-		'on-health-illness-medicine.html',
-		'on-morality.html', 
-		'on-hope.html',
-		'on-introversion.html',
-		'on-joy.html',
-		'on-language.html',
-		'on-love.html',
-		'on-manners.html',
-		'on-justice-and-mercy.html',
-		'on-mind.html',
-		'on-money-and-wealth.html',
-		'on-the-past.html',
-		'on-philosophy.html',
-		'on-race-and-racism.html',
-		'on-reading.html',
-		'on-the-sublime.html',
-		'on-suffering.html',
-		'on-truth-and-knowledge.html',
-		'on-war-and-violence.html',
-		'on-work.html',
-		'on-writing.html',
-    ];
+    <link rel="stylesheet" href="stylesheet.css">
+    <script>
+        async function displayDailyQuote() {
+            const pages = [
+                'on-animals.html',
+                'on-art.html',
+                'on-age.html',
+                'on-beauty.html',
+                'on-benevolence.html',
+                'on-crime-and-punishment.html',
+                'on-culture-and-politics.html',
+                'on-existence.html',
+                'on-death.html',
+                'on-education.html',
+                'on-friendship.html',
+                'on-greatness.html',
+                'on-hate.html',
+                'on-health-illness-medicine.html',
+                'on-morality.html', 
+                'on-hope.html',
+                'on-introversion.html',
+                'on-joy.html',
+                'on-language.html',
+                'on-love.html',
+                'on-manners.html',
+                'on-justice-and-mercy.html',
+                'on-mind.html',
+                'on-money-and-wealth.html',
+                'on-the-past.html',
+                'on-philosophy.html',
+                'on-race-and-racism.html',
+                'on-reading.html',
+                'on-the-sublime.html',
+                'on-suffering.html',
+                'on-truth-and-knowledge.html',
+                'on-war-and-violence.html',
+                'on-work.html',
+                'on-writing.html',
+            ];
 
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date().toISOString().split('T')[0];
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0];
 
-    // Check localStorage for the last displayed quote date and index
-    const storedData = JSON.parse(localStorage.getItem('dailyQuote')) || {};
-    if (storedData.date === today) {
-        // If the date matches, use the stored quote data
-        displayQuote(storedData.quoteHTML, storedData.sourceText, storedData.pageName, storedData.pageURL);
-        return;
-    }
+            // Check localStorage for the last displayed quote date and index
+            const storedData = JSON.parse(localStorage.getItem('dailyQuote')) || {};
+            if (storedData.date === today) {
+                // If the date matches, use the stored quote data
+                displayQuote(storedData.quoteHTML, storedData.sourceText, storedData.pageName, storedData.pageURL);
+                return;
+            }
 
-    // Pick a random page
-    const randomIndex = Math.floor(Math.random() * pages.length);
-    const selectedPage = pages[randomIndex];
+            // Pick a random page
+            const randomIndex = Math.floor(Math.random() * pages.length);
+            const selectedPage = pages[randomIndex];
 
-    try {
-        // Fetch the content of the selected page
-        const response = await fetch(selectedPage);
-        const pageContent = await response.text();
+            try {
+                // Fetch the content of the selected page
+                const response = await fetch(selectedPage);
+                const pageContent = await response.text();
 
-        // Parse the fetched HTML
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(pageContent, 'text/html');
+                // Parse the fetched HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(pageContent, 'text/html');
 
-        // Get all quote entries from the page
-        const quotes = doc.querySelectorAll('.quote-entry');
-        if (!quotes.length) {
-            console.error(`No quotes found in ${selectedPage}`);
-            return;
+                // Get all quote entries from the page
+                const quotes = doc.querySelectorAll('.quote-entry');
+                if (!quotes.length) {
+                    console.error(`No quotes found in ${selectedPage}`);
+                    return;
+                }
+
+                // Pick a random quote
+                const randomQuoteIndex = Math.floor(Math.random() * quotes.length);
+                const selectedQuoteEntry = quotes[randomQuoteIndex];
+
+                // Extract the quote content
+                const quoteHTML = selectedQuoteEntry.querySelector('blockquote').innerHTML; // Preserve formatting
+
+                // Extract the source content
+                const sourceElement = selectedQuoteEntry.querySelector('.source');
+                const sourceText = sourceElement ? sourceElement.textContent.trim() : 'Unknown Source';
+
+                // Extract the page name for the header
+                const pageName = selectedPage.split('/').pop().split('.')[0].replace(/-/g, ' ');
+                const formattedPageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+
+                // Save the quote data to localStorage
+                localStorage.setItem('dailyQuote', JSON.stringify({
+                    date: today,
+                    quoteHTML,
+                    sourceText,
+                    pageName: formattedPageName,
+                    pageURL: selectedPage
+                }));
+
+                // Display the quote
+                displayQuote(quoteHTML, sourceText, formattedPageName, selectedPage);
+            } catch (error) {
+                console.error('Error fetching or processing the quote:', error);
+            }
         }
 
-        // Pick a random quote
-        const randomQuoteIndex = Math.floor(Math.random() * quotes.length);
-        const selectedQuoteEntry = quotes[randomQuoteIndex];
+        function displayQuote(quoteHTML, sourceText, pageName, pageURL) {
+            // Display the quote content
+            const quoteText = document.getElementById('quote-text');
+            quoteText.innerHTML = quoteHTML;
 
-        // Extract the quote content
-        const quoteHTML = selectedQuoteEntry.querySelector('blockquote').innerHTML; // Preserve formatting
+            // Display the source
+            const quoteSource = document.getElementById('quote-source');
+            quoteSource.textContent = `— ${sourceText}`;
 
-        // Extract the source content
-        const sourceElement = selectedQuoteEntry.querySelector('.source');
-        const sourceText = sourceElement ? sourceElement.textContent.trim() : 'Unknown Source';
+            // Update the header with the page name
+            const header = document.getElementById('quote-header');
+            header.innerHTML = `From: <a href="${pageURL}" target="_blank" style="color: inherit; text-decoration: none;">${pageName}</a>`;
+        }
 
-        // Extract the page name for the header
-        const pageName = selectedPage.split('/').pop().split('.')[0].replace(/-/g, ' ');
-        const formattedPageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+        // Ensure the quote is displayed when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            displayDailyQuote();
+        });
 
-        // Save the quote data to localStorage
-        localStorage.setItem('dailyQuote', JSON.stringify({
-            date: today,
-            quoteHTML,
-            sourceText,
-            pageName: formattedPageName,
-            pageURL: selectedPage
-        }));
-
-        // Display the quote
-        displayQuote(quoteHTML, sourceText, formattedPageName, selectedPage);
-    } catch (error) {
-        console.error('Error fetching or processing the quote:', error);
-    }
-}
-
-function displayQuote(quoteHTML, sourceText, pageName, pageURL) {
-    // Display the quote content
-    const quoteText = document.getElementById('quote-text');
-    quoteText.innerHTML = quoteHTML;
-
-    // Display the source
-    const quoteSource = document.getElementById('quote-source');
-    quoteSource.textContent = `— ${sourceText}`;
-
-    // Update the header with the page name
-    const header = document.getElementById('quote-header');
-    header.innerHTML = `From: <a href="${pageURL}" target="_blank" style="color: inherit; text-decoration: none;">${pageName}</a>`;
-}
-
-// Ensure the quote is displayed when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    displayDailyQuote();
-});
-
-	</script>
-	<script>
+        // Audio player functionality
+        function playQuote() {
+            const quoteText = document.getElementById('quote-text').textContent;
+            const quoteSource = document.getElementById('quote-source').textContent;
+            const fullText = quoteText + ' ' + quoteSource;
+            
+            // Stop any currently playing speech
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+            
+            // Create speech synthesis utterance
+            const utterance = new SpeechSynthesisUtterance(fullText);
+            
+            // Get voices and select a British male voice if available
+            const voices = window.speechSynthesis.getVoices();
+            const britishVoice = voices.find(voice => 
+                (voice.name.includes('UK') || voice.name.includes('British')) && 
+                voice.name.includes('Male')
+            );
+            
+            if (britishVoice) {
+                utterance.voice = britishVoice;
+            } else {
+                // Fallback if no British male voice is available
+                const englishVoice = voices.find(voice => 
+                    voice.lang.includes('en-') && 
+                    voice.name.includes('Male')
+                );
+                
+                if (englishVoice) {
+                    utterance.voice = englishVoice;
+                }
+            }
+            
+            // Set additional properties
+            utterance.rate = 0.9; // Slightly slower for better comprehension
+            utterance.pitch = 1;
+            
+            // Add event listeners to update button state
+            utterance.onstart = function() {
+                document.getElementById('play-button').classList.add('playing');
+                document.getElementById('play-icon').className = 'fas fa-pause';
+            };
+            
+            utterance.onend = function() {
+                document.getElementById('play-button').classList.remove('playing');
+                document.getElementById('play-icon').className = 'fas fa-play';
+            };
+            
+            // Speak the text
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function togglePlayback() {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                document.getElementById('play-button').classList.remove('playing');
+                document.getElementById('play-icon').className = 'fas fa-play';
+            } else {
+                playQuote();
+            }
+        }
+        
+        // Load voices when they become available
+        window.speechSynthesis.onvoiceschanged = function() {
+            // This ensures that voices are loaded
+            const voices = window.speechSynthesis.getVoices();
+            console.log("Available voices:", voices.length);
+        };
+    </script>
+    <script>
         let searchIndex = null;
 
         // Load the search index when the page loads
@@ -251,23 +321,64 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     </script>
+    <style>
+        /* Audio player button styles */
+        #play-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #4a4a4a;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            vertical-align: middle;
+        }
+        
+        #play-button:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
+        
+        #play-button.playing {
+            background: #3a3a3a;
+        }
+        
+        .quote-controls {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .quote-attribution {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    <!-- Font Awesome for play/pause icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <header>
         <h1><i>David Kendall Casey</i></h1>
         <h3 class="subtitle">Commonplace Book</h3>
-		 <div class="search-container">
-        <form class="search-form" onsubmit="handleSearch(event)">
-            <input 
-                type="search" 
-                class="search-input" 
-                placeholder="Search entire site..." 
-                aria-label="Search"
-                onkeyup="debounceSearch(event)"
-            >
-        </form>
-        <div class="search-results" id="searchResults"></div>
-    </div>
+        <div class="search-container">
+            <form class="search-form" onsubmit="handleSearch(event)">
+                <input 
+                    type="search" 
+                    class="search-input" 
+                    placeholder="Search entire site..." 
+                    aria-label="Search"
+                    onkeyup="debounceSearch(event)"
+                >
+            </form>
+            <div class="search-results" id="searchResults"></div>
+        </div>
     </header>
 
     <nav>
@@ -275,13 +386,28 @@ document.addEventListener('DOMContentLoaded', () => {
         <a href="commonplace.html">Index</a>
     </nav>
 
-	<h2>Daily selection</h2>
+    <h2>Daily selection</h2>
     <main class="container">
         <div id="quote-of-the-day">
-			<p id="quote-header"></p> 
-			<blockquote id="quote-text"></blockquote>
-			<p id="quote-source"></p>
-		</div>
+            <p id="quote-header"></p> 
+            <blockquote id="quote-text"></blockquote>
+            <div class="quote-attribution">
+                <p id="quote-source"></p>
+                <button id="play-button" onclick="togglePlayback()" title="Listen to quote">
+                    <i id="play-icon" class="fas fa-play"></i>
+                </button>
+            </div>
+        </div>
     </main>
+    
+    <script>
+        // Check if the browser supports speech synthesis
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!window.speechSynthesis) {
+                console.error('Speech synthesis not supported');
+                document.getElementById('play-button').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
