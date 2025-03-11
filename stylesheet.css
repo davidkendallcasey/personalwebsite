@@ -20,7 +20,7 @@ body {
   width: 30%; /* Makes it centered */
   margin: 50px auto; /* Padding on top and bottom */
   border: none;
-  height: 0.5px;
+  height: 1px;
   background-color: red;
   padding-bottom: 0.2rem;
 }
@@ -81,7 +81,7 @@ nav a:hover {
         }
 
 blockquote {
-			color: white; /* White with 90% opacity */
+			color: solid white;
             border-left: 2px solid white;
             margin: 0;
             padding-left: 1.5rem;
