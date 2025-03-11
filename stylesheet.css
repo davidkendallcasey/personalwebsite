@@ -23,7 +23,8 @@ body {
 }
 
 header {
-            text-align: center;
+            position: relative;
+			text-align: center;
 			color: white;
             padding: 6rem 2rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -147,9 +148,9 @@ blockquote {
 			}
 			
 .search-container {
-			position: fixed;
-			top: 0;
-			right: 0;
+			position: absolute;
+			top: 10px;
+			right: 10px;
 			padding: 1rem;
 			width: auto;
 			background: transparent; 
@@ -234,5 +235,13 @@ blockquote {
   text-decoration: none;
   padding: 8px 12px;
   /* Add other styling like colors, borders, etc. */
+}
+#quote-header, 
+#quote-source {
+  color: #e0e0e0;
+}
+
+#quote-of-the-day {
+  margin-bottom: 30px;
 }
 	
