@@ -47,8 +47,8 @@ h2 {
 			font-style: italic;
             font-weight: normal;
 			text-align: center;
-            margin: 1rem 0;
-            padding-bottom: 1rem;
+            margin: 0.5rem 0;
+            padding-bottom: 0.2rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
