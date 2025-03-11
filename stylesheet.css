@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sorts+Mill+Goudy:ital@0;1&display=swap');
 body {
             background: black;
-            font-family: 'EB Garamond', serif; 
+            font-family: 'Sorts Mill Goudy', serif; 
             margin: 0;
             padding: 0;
             line-height: 1.7;
@@ -42,7 +42,7 @@ h2 {
         }
 
 h3 {
-			font-family: 'EB Garamond', serif;
+			font-family: 'Sorts Mill Goudy', serif;
 			color: lightgray;
             font-size: 1.5rem;
             font-weight: normal;
@@ -51,7 +51,8 @@ h3 {
 nav {
             text-align: center;
             padding: 1.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			border-top: 1px solid red;
+            border-bottom: 1px solid red;
 			margin-bottom: 2rem;
         }
 
@@ -67,10 +68,11 @@ nav a:hover {
         }
 
 blockquote {
-			color: color: rgba(255, 255, 255, 0.9); /* White with 90% opacity */
+			color: color: rgba(255, 255, 255, 0.1); /* White with 10% opacity */
             border-left: 2px solid white;
             margin: 0;
             padding-left: 1.5rem;
+			border-bottom: 1px solid red;
         }
 
 .source {
