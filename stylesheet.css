@@ -13,6 +13,14 @@ body {
             margin: 0 auto;
             padding: 0 2rem;
         }
+		
+.divider {
+  width: 50%; /* Makes it centered */
+  margin: 20px auto;
+  border: none;
+  height: 1px;
+  background-color: red;
+}
 
 header {
             text-align: center;
@@ -68,7 +76,7 @@ nav a:hover {
         }
 
 blockquote {
-			color: color: rgba(255, 255, 255, 0.1); /* White with 10% opacity */
+			color: color: rgba(255, 255, 255, 0.9); /* White with 90% opacity */
             border-left: 2px solid white;
             margin: 0;
             padding-left: 1.5rem;
@@ -208,12 +216,11 @@ blockquote {
             background-color: yellow;
             padding: 0 2px;
 }
-	/* Grid layout for the commonplace index categories */
+/* Three-column grid layout */
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  width: 100%;
+  grid-template-columns: 1fr 1fr 1fr; /* Creates three equal columns */
+  gap: 20px; /* Space between columns */
 }
 
 /* Style for each category item */
