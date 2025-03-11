@@ -145,34 +145,38 @@
             let currentChunk = 0;
             
             function speakNextChunk() {
-                if (currentChunk < chunks.length) {
-                    // Create speech synthesis utterance for this chunk
-                    speechUtterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
-                    
-                    // Get voices and select a British male voice if available
-                    const voices = window.speechSynthesis.getVoices();
-                    const britishVoice = voices.find(voice => 
-                        (voice.name.includes('UK') || voice.name.includes('British')) && 
-                        voice.name.includes('Male')
-                    );
-                    
-                    if (britishVoice) {
-                        speechUtterance.voice = britishVoice;
-                    } else {
-                        // Fallback if no British male voice is available
-                        const englishVoice = voices.find(voice => 
-                            voice.lang.includes('en-') && 
-                            voice.name.includes('Male')
-                        );
-                        
-                        if (englishVoice) {
-                            speechUtterance.voice = englishVoice;
-                        }
-                    }
-                    
-                    // Set additional properties
-                    speechUtterance.rate = 0.9; // Slightly slower for better comprehension
-                    speechUtterance.pitch = 1;
+    if (currentChunk < chunks.length) {
+        // Create speech synthesis utterance for this chunk
+        speechUtterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
+        
+        // Use the user's selected voice if available
+        if (selectedVoice) {
+            speechUtterance.voice = selectedVoice;
+        } else {
+            // Fallback logic
+            const voices = window.speechSynthesis.getVoices();
+            const britishVoice = voices.find(voice => 
+                (voice.name.includes('UK') || voice.name.includes('British')) && 
+                voice.name.includes('Male')
+            );
+            
+            if (britishVoice) {
+                speechUtterance.voice = britishVoice;
+            } else {
+                const englishVoice = voices.find(voice => 
+                    voice.lang.includes('en-') && 
+                    voice.name.includes('Male')
+                );
+                
+                if (englishVoice) {
+                    speechUtterance.voice = englishVoice;
+                }
+            }
+        }
+        
+        // Use user-selected rate and pitch
+        speechUtterance.rate = parseFloat(document.getElementById('rate').value);
+        speechUtterance.pitch = parseFloat(document.getElementById('pitch').value);
                     
                     // Add event listeners
                     speechUtterance.onstart = function() {
@@ -270,12 +274,58 @@
             }
         }
         
-        // Load voices when they become available
-        window.speechSynthesis.onvoiceschanged = function() {
-            // This ensures that voices are loaded
-            const voices = window.speechSynthesis.getVoices();
-            console.log("Available voices:", voices.length);
-        };
+function populateVoiceList() {
+  const voiceSelect = document.getElementById('voiceSelect');
+  let voices = [];
+  
+  try {
+    voices = window.speechSynthesis.getVoices();
+  } catch (e) {
+    console.error("Error getting voices:", e);
+  }
+  
+  // If voices array is empty, try again in a moment
+  if (voices.length === 0) {
+    setTimeout(populateVoiceList, 200);
+    return;
+  }
+  
+  // Clear existing options except first default option
+  while (voiceSelect.options.length > 1) {
+    voiceSelect.remove(1);
+  }
+  
+  // Add all available voices
+  voices.forEach((voice, index) => {
+    const option = document.createElement('option');
+    option.textContent = `${voice.name} (${voice.lang})`;
+    option.setAttribute('data-voice-index', index);
+    voiceSelect.appendChild(option);
+  });
+  
+  console.log(`Loaded ${voices.length} voices`);
+}
+
+// Try multiple approaches to load the voices
+document.addEventListener('DOMContentLoaded', function() {
+  // First attempt
+  populateVoiceList();
+  
+  // Second attempt - some browsers need this
+  if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = populateVoiceList;
+  }
+  
+  // Third attempt - force a reload after a delay
+  setTimeout(populateVoiceList, 1000);
+});
+
+// Force voice refresh when the dropdown is clicked
+document.getElementById('voiceSelect').addEventListener('click', function() {
+  if (this.options.length <= 1) {
+    populateVoiceList();
+  }
+});
     </script>
 	<script>
 // Save voice preferences to localStorage
@@ -391,44 +441,6 @@ if (window.speechSynthesis.onvoiceschanged !== undefined) {
         setTimeout(populateVoiceList, 100);
     });
 }
-
-// MODIFY your existing playQuote function to use selected voice:
-// Replace the voice selection part of your speech synthesis:
-function speakNextChunk() {
-    if (currentChunk < chunks.length) {
-        // Create speech synthesis utterance for this chunk
-        speechUtterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
-        
-        // Use the user's selected voice if available
-        if (selectedVoice) {
-            speechUtterance.voice = selectedVoice;
-        } else {
-            // Your existing fallback logic
-            const voices = window.speechSynthesis.getVoices();
-            const britishVoice = voices.find(voice => 
-                (voice.name.includes('UK') || voice.name.includes('British')) && 
-                voice.name.includes('Male')
-            );
-            
-            if (britishVoice) {
-                speechUtterance.voice = britishVoice;
-            } else {
-                const englishVoice = voices.find(voice => 
-                    voice.lang.includes('en-') && 
-                    voice.name.includes('Male')
-                );
-                
-                if (englishVoice) {
-                    speechUtterance.voice = englishVoice;
-                }
-            }
-        }
-        
-        // Use user-selected rate and pitch
-        speechUtterance.rate = parseFloat(document.getElementById('rate').value);
-        speechUtterance.pitch = parseFloat(document.getElementById('pitch').value);
-        
-        // Rest of your function remains the same...
 </script>
     <script>
         let searchIndex = null;
@@ -623,34 +635,35 @@ function speakNextChunk() {
 
     <h2>Daily selection</h2>
     <main class="container">
-        <div id="quote-of-the-day">
-            <p id="quote-header"></p> 
-            <blockquote id="quote-text"></blockquote>
-            <div class="quote-attribution">
-                <p id="quote-source"></p>
-				<div class="voice-control">
-    <select id="voiceSelect" class="voice-select" title="Select voice">
-        <option value="">Default Voice</option>
-        <!-- Options will be populated by JavaScript -->
-    </select>
-    <div class="voice-settings">
-        <label>
-            Rate: <input type="range" id="rate" min="0.5" max="1.5" value="0.9" step="0.05">
-            <span id="rateValue">0.9</span>
-        </label>
-        <label>
-            Pitch: <input type="range" id="pitch" min="0.5" max="1.5" value="1.0" step="0.05">
-            <span id="pitchValue">1.0</span>
-        </label>
-    </div>
-</div>
-                <button id="play-button" onclick="togglePlayback()" title="Listen to quote">
-                    <i id="play-icon" class="fas fa-play"></i>
-                </button>
+    <div id="quote-of-the-day">
+        <p id="quote-header"></p> 
+        <blockquote id="quote-text"></blockquote>
+        <div class="quote-attribution">
+            <p id="quote-source"></p>
+            <button id="play-button" onclick="togglePlayback()" title="Listen to quote">
+                <i id="play-icon" class="fas fa-play"></i>
+            </button>
+        </div>
+        <!-- Voice controls below quote and author -->
+        <div class="voice-control">
+            <label for="voiceSelect">Voice:</label>
+            <select id="voiceSelect" class="voice-select" title="Select voice">
+                <option value="">Default Voice</option>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+            <div class="voice-settings">
+                <label>
+                    Rate: <input type="range" id="rate" min="0.5" max="1.5" value="0.9" step="0.05">
+                    <span id="rateValue">0.9</span>
+                </label>
+                <label>
+                    Pitch: <input type="range" id="pitch" min="0.5" max="1.5" value="1.0" step="0.05">
+                    <span id="pitchValue">1.0</span>
+                </label>
             </div>
         </div>
-    </main>
-    
+    </div>
+</main>
     <script>
         // Check if the browser supports speech synthesis
         document.addEventListener('DOMContentLoaded', function() {
