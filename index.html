@@ -345,13 +345,11 @@ function loadVoicePreferences() {
     
     // Set rate and pitch if saved
     if (savedPrefs.rate) {
-        document.getElementById('rate').value = savedPrefs.rate;
-        document.getElementById('rateValue').textContent = savedPrefs.rate;
-    }
-    if (savedPrefs.pitch) {
-        document.getElementById('pitch').value = savedPrefs.pitch;
-        document.getElementById('pitchValue').textContent = savedPrefs.pitch;
-    }
+    document.getElementById('rate').value = savedPrefs.rate;
+}
+if (savedPrefs.pitch) {
+    document.getElementById('pitch').value = savedPrefs.pitch;
+}
     
     return savedPrefs;
 }
@@ -361,19 +359,9 @@ let selectedVoice = null;
 const voiceSelect = document.getElementById('voiceSelect');
 const rate = document.getElementById('rate');
 const pitch = document.getElementById('pitch');
-const rateValue = document.getElementById('rateValue');
-const pitchValue = document.getElementById('pitchValue');
 
-// Update displayed values
-rate.addEventListener('input', () => {
-    rateValue.textContent = rate.value;
-    saveVoicePreferences();
-});
-
-pitch.addEventListener('input', () => {
-    pitchValue.textContent = pitch.value;
-    saveVoicePreferences();
-});
+rate.addEventListener('input', saveVoicePreferences);
+pitch.addEventListener('input', saveVoicePreferences);
 
 // Change selected voice
 voiceSelect.addEventListener('change', () => {
@@ -651,16 +639,6 @@ if (window.speechSynthesis.onvoiceschanged !== undefined) {
                 <option value="">Default Voice</option>
                 <!-- Options will be populated by JavaScript -->
             </select>
-            <div class="voice-settings">
-                <label>
-                    Rate: <input type="range" id="rate" min="0.5" max="1.5" value="0.9" step="0.05">
-                    <span id="rateValue">0.9</span>
-                </label>
-                <label>
-                    Pitch: <input type="range" id="pitch" min="0.5" max="1.5" value="1.0" step="0.05">
-                    <span id="pitchValue">1.0</span>
-                </label>
-            </div>
         </div>
     </div>
 </main>
