@@ -2,6 +2,7 @@
 body {
             background: black;
             font-family: 'Sorts Mill Goudy', serif; 
+			color: white;
             margin: 0;
             padding: 0;
             line-height: 1.7;
@@ -15,10 +16,10 @@ body {
         }
 		
 .divider {
-  width: 35%; /* Makes it centered */
-  margin: 30px auto; /* Padding on top and bottom */
+  width: 30%; /* Makes it centered */
+  margin: 100px auto; /* Padding on top and bottom */
   border: none;
-  height: 1px;
+  height: 0.5px;
   background-color: red;
 }
 
@@ -231,11 +232,16 @@ blockquote {
 }
 
 /* Style for the category links */
-.category-link {
+.category-link { 
+	color: white !important; /* Make links white */
   display: block;
   text-decoration: none;
   padding: 8px 12px;
   /* Add other styling like colors, borders, etc. */
+}
+
+.category-link:hover {
+    color: #e0e0e0 !important; /* Light gray on hover */
 }
 
 #quote-header, 
