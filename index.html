@@ -124,6 +124,10 @@
             displayDailyQuote();
         });
 
+        // Global variables for speech synthesis
+        let speechUtterance = null;
+        let speechTimer = null;
+        
         // Audio player functionality
         function playQuote() {
             const quoteText = document.getElementById('quote-text').textContent;
@@ -133,54 +137,132 @@
             // Stop any currently playing speech
             if (window.speechSynthesis.speaking) {
                 window.speechSynthesis.cancel();
+                clearInterval(speechTimer);
             }
             
-            // Create speech synthesis utterance
-            const utterance = new SpeechSynthesisUtterance(fullText);
+            // Split text into chunks if it's too long (to prevent cutting off)
+            const chunks = splitTextIntoChunks(fullText);
+            let currentChunk = 0;
             
-            // Get voices and select a British male voice if available
-            const voices = window.speechSynthesis.getVoices();
-            const britishVoice = voices.find(voice => 
-                (voice.name.includes('UK') || voice.name.includes('British')) && 
-                voice.name.includes('Male')
-            );
-            
-            if (britishVoice) {
-                utterance.voice = britishVoice;
-            } else {
-                // Fallback if no British male voice is available
-                const englishVoice = voices.find(voice => 
-                    voice.lang.includes('en-') && 
-                    voice.name.includes('Male')
-                );
-                
-                if (englishVoice) {
-                    utterance.voice = englishVoice;
+            function speakNextChunk() {
+                if (currentChunk < chunks.length) {
+                    // Create speech synthesis utterance for this chunk
+                    speechUtterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
+                    
+                    // Get voices and select a British male voice if available
+                    const voices = window.speechSynthesis.getVoices();
+                    const britishVoice = voices.find(voice => 
+                        (voice.name.includes('UK') || voice.name.includes('British')) && 
+                        voice.name.includes('Male')
+                    );
+                    
+                    if (britishVoice) {
+                        speechUtterance.voice = britishVoice;
+                    } else {
+                        // Fallback if no British male voice is available
+                        const englishVoice = voices.find(voice => 
+                            voice.lang.includes('en-') && 
+                            voice.name.includes('Male')
+                        );
+                        
+                        if (englishVoice) {
+                            speechUtterance.voice = englishVoice;
+                        }
+                    }
+                    
+                    // Set additional properties
+                    speechUtterance.rate = 0.9; // Slightly slower for better comprehension
+                    speechUtterance.pitch = 1;
+                    
+                    // Add event listeners
+                    speechUtterance.onstart = function() {
+                        document.getElementById('play-button').classList.add('playing');
+                        document.getElementById('play-icon').className = 'fas fa-pause';
+                    };
+                    
+                    // Only set the end event on the last chunk
+                    if (currentChunk === chunks.length - 1) {
+                        speechUtterance.onend = function() {
+                            document.getElementById('play-button').classList.remove('playing');
+                            document.getElementById('play-icon').className = 'fas fa-play';
+                            clearInterval(speechTimer);
+                        };
+                    } else {
+                        speechUtterance.onend = function() {
+                            currentChunk++;
+                            speakNextChunk();
+                        };
+                    }
+                    
+                    // Speak the text
+                    window.speechSynthesis.speak(speechUtterance);
+                    
+                    // Workaround for Chrome issue where speechSynthesis pauses after ~15 seconds
+                    // This keeps the synthesis active
+                    clearInterval(speechTimer);
+                    speechTimer = setInterval(() => {
+                        if (!window.speechSynthesis.speaking) {
+                            clearInterval(speechTimer);
+                            return;
+                        }
+                        window.speechSynthesis.pause();
+                        window.speechSynthesis.resume();
+                    }, 10000); // Reset every 10 seconds
                 }
             }
             
-            // Set additional properties
-            utterance.rate = 0.9; // Slightly slower for better comprehension
-            utterance.pitch = 1;
+            // Start speaking chunks
+            speakNextChunk();
+        }
+        
+        // Helper function to split text into manageable chunks
+        function splitTextIntoChunks(text, maxLength = 150) {
+            if (text.length <= maxLength) {
+                return [text];
+            }
             
-            // Add event listeners to update button state
-            utterance.onstart = function() {
-                document.getElementById('play-button').classList.add('playing');
-                document.getElementById('play-icon').className = 'fas fa-pause';
-            };
+            const chunks = [];
+            let startIndex = 0;
             
-            utterance.onend = function() {
-                document.getElementById('play-button').classList.remove('playing');
-                document.getElementById('play-icon').className = 'fas fa-play';
-            };
+            while (startIndex < text.length) {
+                // Find a good breaking point (end of sentence or punctuation)
+                let endIndex = Math.min(startIndex + maxLength, text.length);
+                
+                if (endIndex < text.length) {
+                    // Try to find sentence endings or punctuation
+                    const sentenceBreak = text.lastIndexOf('. ', endIndex);
+                    const commaBreak = text.lastIndexOf(', ', endIndex);
+                    const semicolonBreak = text.lastIndexOf('; ', endIndex);
+                    
+                    // Find the closest break point that's after startIndex
+                    let breakPoint = -1;
+                    if (sentenceBreak > startIndex) breakPoint = sentenceBreak + 1; // Include the period
+                    if (commaBreak > startIndex && (breakPoint === -1 || commaBreak > breakPoint)) breakPoint = commaBreak + 1;
+                    if (semicolonBreak > startIndex && (breakPoint === -1 || semicolonBreak > breakPoint)) breakPoint = semicolonBreak + 1;
+                    
+                    // If we found a good break point, use it
+                    if (breakPoint !== -1) {
+                        endIndex = breakPoint;
+                    } else {
+                        // If no punctuation, try to break at a space
+                        const spaceBreak = text.lastIndexOf(' ', endIndex);
+                        if (spaceBreak > startIndex) {
+                            endIndex = spaceBreak + 1;
+                        }
+                    }
+                }
+                
+                chunks.push(text.substring(startIndex, endIndex).trim());
+                startIndex = endIndex;
+            }
             
-            // Speak the text
-            window.speechSynthesis.speak(utterance);
+            return chunks;
         }
         
         function togglePlayback() {
             if (window.speechSynthesis.speaking) {
                 window.speechSynthesis.cancel();
+                clearInterval(speechTimer);
                 document.getElementById('play-button').classList.remove('playing');
                 document.getElementById('play-icon').className = 'fas fa-play';
             } else {
