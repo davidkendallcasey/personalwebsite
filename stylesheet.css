@@ -35,6 +35,7 @@ h1 {
             font-size: 3rem;
             font-weight: normal;
             margin: 0;
+			padding-bottom: 2rem;
         }
 
 h2 {
@@ -149,7 +150,7 @@ blockquote {
 			position: fixed;
 			top: 0;
 			right: 0;
-			padding: 1rem;
+			padding: 2rem;
 			width: auto;
 			background: transparent; 
 			box-shadow: none; 
