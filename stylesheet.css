@@ -48,8 +48,8 @@ h2 {
 			font-style: italic;
             font-weight: normal;
 			text-align: center;
-            margin: 0.5rem 0;
-            padding-bottom: 1rem;
+            margin: 1rem 0;
+            padding-bottom: 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -304,4 +304,18 @@ blockquote {
 
 .voice-settings input {
     width: 80px;
+}
+
+/* Make all links white regardless of visited status */
+a {
+    color: white;
+}
+
+a:visited {
+    color: white;
+}
+
+/* Optional: Add a hover effect */
+a:hover {
+    color: #cccccc; /* Light gray on hover */
 }
