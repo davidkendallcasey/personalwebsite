@@ -132,15 +132,6 @@
         // Load voice preferences from localStorage
         function loadVoicePreferences() {
             const savedPrefs = JSON.parse(localStorage.getItem('voicePreferences') || '{}');
-            
-            // Set rate and pitch if saved
-            if (savedPrefs.rate) {
-                document.getElementById('rate').value = savedPrefs.rate;
-            }
-            if (savedPrefs.pitch) {
-                document.getElementById('pitch').value = savedPrefs.pitch;
-            }
-            
             return savedPrefs;
         }
 
@@ -148,9 +139,7 @@
         function saveVoicePreferences() {
             const preferences = {
                 voiceName: selectedVoice ? selectedVoice.name : '',
-                voiceLang: selectedVoice ? selectedVoice.lang : '',
-                rate: document.getElementById('rate') ? parseFloat(document.getElementById('rate').value) : 1,
-                pitch: document.getElementById('pitch') ? parseFloat(document.getElementById('pitch').value) : 1
+                voiceLang: selectedVoice ? selectedVoice.lang : ''
             };
             localStorage.setItem('voicePreferences', JSON.stringify(preferences));
         }
@@ -274,12 +263,9 @@
                         }
                     }
                     
-                    // Use user-selected rate and pitch
-                    const rateElement = document.getElementById('rate');
-                    const pitchElement = document.getElementById('pitch');
-                    
-                    speechUtterance.rate = rateElement ? parseFloat(rateElement.value) : 1;
-                    speechUtterance.pitch = pitchElement ? parseFloat(pitchElement.value) : 1;
+                    // Use default rate and pitch
+                    speechUtterance.rate = 1;
+                    speechUtterance.pitch = 1;
                     
                     // Add event listeners
                     speechUtterance.onstart = function() {
@@ -393,51 +379,6 @@
             }
         }
 
-        // Add missing rate and pitch inputs if they don't exist
-        function addMissingControls() {
-            const voiceControl = document.querySelector('.voice-control');
-            if (!voiceControl) {
-                console.error("Voice control container not found");
-                return;
-            }
-            
-            if (!document.getElementById('rate')) {
-                const rateLabel = document.createElement('label');
-                rateLabel.setAttribute('for', 'rate');
-                rateLabel.textContent = 'Speed: ';
-                voiceControl.appendChild(rateLabel);
-                
-                const rateInput = document.createElement('input');
-                rateInput.setAttribute('type', 'range');
-                rateInput.setAttribute('id', 'rate');
-                rateInput.setAttribute('min', '0.5');
-                rateInput.setAttribute('max', '2');
-                rateInput.setAttribute('step', '0.1');
-                rateInput.setAttribute('value', '1');
-                voiceControl.appendChild(rateInput);
-                
-                rateInput.addEventListener('input', saveVoicePreferences);
-            }
-            
-            if (!document.getElementById('pitch')) {
-                const pitchLabel = document.createElement('label');
-                pitchLabel.setAttribute('for', 'pitch');
-                pitchLabel.textContent = 'Pitch: ';
-                voiceControl.appendChild(pitchLabel);
-                
-                const pitchInput = document.createElement('input');
-                pitchInput.setAttribute('type', 'range');
-                pitchInput.setAttribute('id', 'pitch');
-                pitchInput.setAttribute('min', '0.5');
-                pitchInput.setAttribute('max', '2');
-                pitchInput.setAttribute('step', '0.1');
-                pitchInput.setAttribute('value', '1');
-                voiceControl.appendChild(pitchInput);
-                
-                pitchInput.addEventListener('input', saveVoicePreferences);
-            }
-        }
-
         // Initialize everything when the page loads
         document.addEventListener('DOMContentLoaded', function() {
             // Check if speech synthesis is supported
@@ -449,9 +390,6 @@
             }
             
             console.log("Speech synthesis is supported, initializing...");
-            
-            // Add any missing controls
-            addMissingControls();
             
             // Populate the voice list
             populateVoiceList();
@@ -648,6 +586,15 @@
         .quote-attribution {
             display: flex;
             align-items: center;
+        }
+
+        .divider {
+          width: 20%; /* Thinner width */
+          margin: 50px auto; /* Padding on top and bottom */
+          border: none;
+          height: 0.5px; /* Thinner line */
+          background-color: crimson; /* Crimson red */
+          padding-bottom: 0.1rem;
         }
     </style>
     <!-- Font Awesome for play/pause icon -->
