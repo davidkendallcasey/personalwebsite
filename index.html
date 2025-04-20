@@ -1,658 +1,282 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>David Kendall Casey</title>
-    <link rel="stylesheet" href="stylesheet.css">
-    <script>
-        async function displayDailyQuote() {
-            const pages = [
-                'on-animals.html',
-                'on-art-and-creativity.html',
-                'on-age.html',
-                'on-beauty.html',
-                'on-benevolence.html',
-                'on-crime-and-punishment.html',
-                'on-culture-and-politics.html',
-                'on-existence.html',
-                'on-death.html',
-                'on-education.html',
-                'on-friendship.html',
-                'on-greatness.html',
-                'on-hate.html',
-                'on-health-illness-medicine.html',
-                'on-morality.html', 
-                'on-hope.html',
-                'on-introversion.html',
-                'on-joy.html',
-                'on-language.html',
-                'on-love.html',
-                'on-manners.html',
-                'on-justice-and-mercy.html',
-                'on-mind.html',
-                'on-money-and-wealth.html',
-                'on-the-past.html',
-                'on-philosophy.html',
-                'on-race-and-racism.html',
-                'on-reading.html',
-                'on-the-sublime.html',
-                'on-suffering.html',
-				'on-technology.html',
-                'on-truth-and-knowledge.html',
-                'on-war-and-violence.html',
-                'on-work.html',
-                'on-writing.html',
-            ];
+  <meta charset="UTF-8">
+  <title>David Kendall Casey</title>
+  <link rel="stylesheet" href="stylesheet.css">
+  <!-- Font Awesome for play/pause icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  >
+  <style>
+    /* Audio player button styles */
+    #play-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #4a4a4a;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      margin-left: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      vertical-align: middle;
+    }
+    #play-button:hover {
+      background: #333;
+      transform: scale(1.05);
+    }
+    #play-button.playing {
+      background: #3a3a3a;
+    }
+    .quote-attribution {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .divider {
+      width: 20%;
+      margin: 50px auto;
+      border: none;
+      height: 0.5px;
+      background-color: crimson;
+    }
+  </style>
 
-            // Get today's date in YYYY-MM-DD format
-            const today = new Date().toISOString().split('T')[0];
-
-            // Check localStorage for the last displayed quote date and index
-            const storedData = JSON.parse(localStorage.getItem('dailyQuote')) || {};
-            if (storedData.date === today) {
-                // If the date matches, use the stored quote data
-                displayQuote(storedData.quoteHTML, storedData.sourceText, storedData.pageName, storedData.pageURL);
-                return;
-            }
-
-            // Pick a random page
-            const randomIndex = Math.floor(Math.random() * pages.length);
-            const selectedPage = pages[randomIndex];
-
-            try {
-                // Fetch the content of the selected page
-                const response = await fetch(selectedPage);
-                const pageContent = await response.text();
-
-                // Parse the fetched HTML
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(pageContent, 'text/html');
-
-                // Get all quote entries from the page
-                const quotes = doc.querySelectorAll('.quote-entry');
-                if (!quotes.length) {
-                    console.error(`No quotes found in ${selectedPage}`);
-                    return;
-                }
-
-                // Pick a random quote
-                const randomQuoteIndex = Math.floor(Math.random() * quotes.length);
-                const selectedQuoteEntry = quotes[randomQuoteIndex];
-
-                // Extract the quote content
-                const quoteHTML = selectedQuoteEntry.querySelector('blockquote').innerHTML; // Preserve formatting
-
-                // Extract the source content
-                const sourceElement = selectedQuoteEntry.querySelector('.source');
-                const sourceText = sourceElement ? sourceElement.textContent.trim() : 'Unknown Source';
-
-                // Extract the page name for the header
-                const pageName = selectedPage.split('/').pop().split('.')[0].replace(/-/g, ' ');
-                const formattedPageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
-
-                // Save the quote data to localStorage
-                localStorage.setItem('dailyQuote', JSON.stringify({
-                    date: today,
-                    quoteHTML,
-                    sourceText,
-                    pageName: formattedPageName,
-                    pageURL: selectedPage
-                }));
-
-                // Display the quote
-                displayQuote(quoteHTML, sourceText, formattedPageName, selectedPage);
-            } catch (error) {
-                console.error('Error fetching or processing the quote:', error);
-            }
-        }
-
-        function displayQuote(quoteHTML, sourceText, pageName, pageURL) {
-            // Display the quote content
-            const quoteText = document.getElementById('quote-text');
-            quoteText.innerHTML = quoteHTML;
-
-            // Display the source
-            const quoteSource = document.getElementById('quote-source');
-            quoteSource.textContent = `— ${sourceText}`;
-
-            // Update the header with the page name
-            const header = document.getElementById('quote-header');
-            header.innerHTML = `From: <a href="${pageURL}" target="_blank" style="color: inherit; text-decoration: none;">${pageName}</a>`;
-        }
-
-        // Ensure the quote is displayed when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            displayDailyQuote();
-        });
-
-        // Global variables for speech synthesis
-        let speechUtterance = null;
-        let speechTimer = null;
-        let selectedVoice = null;
-
-        // Load voice preferences from localStorage
-        function loadVoicePreferences() {
-            const savedPrefs = JSON.parse(localStorage.getItem('voicePreferences') || '{}');
-            return savedPrefs;
-        }
-
-        // Save voice preferences to localStorage
-        function saveVoicePreferences() {
-            const preferences = {
-                voiceName: selectedVoice ? selectedVoice.name : '',
-                voiceLang: selectedVoice ? selectedVoice.lang : ''
-            };
-            localStorage.setItem('voicePreferences', JSON.stringify(preferences));
-        }
-
-        // Populate the voice selector dropdown
-        function populateVoiceList() {
-            const voiceSelect = document.getElementById('voiceSelect');
-            if (!voiceSelect) {
-                console.error("Voice select element not found");
-                return;
-            }
-            
-            let voices = [];
-            
-            try {
-                voices = window.speechSynthesis.getVoices();
-            } catch (e) {
-                console.error("Error getting voices:", e);
-            }
-            
-            // If voices array is empty, try again in a moment
-            if (voices.length === 0) {
-                console.log("No voices available yet, retrying...");
-                setTimeout(populateVoiceList, 200);
-                return;
-            }
-            
-            console.log(`Found ${voices.length} voices`);
-            
-            // Clear existing options except first default option
-            while (voiceSelect.options.length > 1) {
-                voiceSelect.remove(1);
-            }
-            
-            const savedPrefs = loadVoicePreferences();
-            
-            // Add all available voices
-            voices.forEach((voice, index) => {
-                const option = document.createElement('option');
-                option.textContent = `${voice.name} (${voice.lang})`;
-                option.setAttribute('data-voice-index', index);
-                
-                // Select this voice if it matches saved preferences
-                if (savedPrefs.voiceName && savedPrefs.voiceName === voice.name) {
-                    option.selected = true;
-                    selectedVoice = voice;
-                }
-                
-                voiceSelect.appendChild(option);
-            });
-            
-            // Set event listener for voice selection
-            voiceSelect.addEventListener('change', () => {
-                const selectedIndex = voiceSelect.selectedOptions[0].getAttribute('data-voice-index');
-                
-                if (selectedIndex !== null && selectedIndex !== undefined) {
-                    selectedVoice = voices[selectedIndex];
-                    console.log("Selected voice:", selectedVoice.name);
-                } else {
-                    selectedVoice = null;
-                }
-                
-                saveVoicePreferences();
-            });
-        }
-
-        // Audio player functionality
-        function playQuote() {
-            const quoteText = document.getElementById('quote-text').textContent;
-            const quoteSource = document.getElementById('quote-source').textContent;
-            const fullText = quoteText + ' ' + quoteSource;
-            
-            console.log("Playing quote:", fullText.substring(0, 50) + "...");
-            
-            // Stop any currently playing speech
-            if (window.speechSynthesis.speaking) {
-                window.speechSynthesis.cancel();
-                clearInterval(speechTimer);
-            }
-            
-            // Split text into chunks if it's too long (to prevent cutting off)
-            const chunks = splitTextIntoChunks(fullText);
-            let currentChunk = 0;
-            
-            function speakNextChunk() {
-                if (currentChunk < chunks.length) {
-                    // Create speech synthesis utterance for this chunk
-                    speechUtterance = new SpeechSynthesisUtterance(chunks[currentChunk]);
-                    
-                    // Get voices again to ensure they're loaded
-                    const voices = window.speechSynthesis.getVoices();
-                    
-                    // Use the user's selected voice if available
-                    if (selectedVoice) {
-                        speechUtterance.voice = selectedVoice;
-                        console.log("Using selected voice:", selectedVoice.name);
-                    } else {
-                        // Fallback logic
-                        const britishVoice = voices.find(voice => 
-                            (voice.name.includes('UK') || voice.name.includes('British')) && 
-                            voice.name.includes('Male')
-                        );
-                        
-                        if (britishVoice) {
-                            speechUtterance.voice = britishVoice;
-                            console.log("Using British voice fallback:", britishVoice.name);
-                        } else {
-                            const englishVoice = voices.find(voice => 
-                                voice.lang.includes('en-') && 
-                                voice.name.includes('Male')
-                            );
-                            
-                            if (englishVoice) {
-                                speechUtterance.voice = englishVoice;
-                                console.log("Using English voice fallback:", englishVoice.name);
-                            } else if (voices.length > 0) {
-                                // Just use the first available voice as last resort
-                                speechUtterance.voice = voices[0];
-                                console.log("Using first available voice:", voices[0].name);
-                            }
-                        }
-                    }
-                    
-                    // Use default rate and pitch
-                    speechUtterance.rate = 1;
-                    speechUtterance.pitch = 1;
-                    
-                    // Add event listeners
-                    speechUtterance.onstart = function() {
-                        const playButton = document.getElementById('play-button');
-                        const playIcon = document.getElementById('play-icon');
-                        if (playButton) playButton.classList.add('playing');
-                        if (playIcon) playIcon.className = 'fas fa-pause';
-                        console.log("Speech started for chunk", currentChunk + 1, "of", chunks.length);
-                    };
-                    
-                    // Only set the end event on the last chunk
-                    if (currentChunk === chunks.length - 1) {
-                        speechUtterance.onend = function() {
-                            const playButton = document.getElementById('play-button');
-                            const playIcon = document.getElementById('play-icon');
-                            if (playButton) playButton.classList.remove('playing');
-                            if (playIcon) playIcon.className = 'fas fa-play';
-                            clearInterval(speechTimer);
-                            console.log("Speech ended for all chunks");
-                        };
-                    } else {
-                        speechUtterance.onend = function() {
-                            currentChunk++;
-                            console.log("Moving to next chunk:", currentChunk + 1, "of", chunks.length);
-                            speakNextChunk();
-                        };
-                    }
-                    
-                    speechUtterance.onerror = function(event) {
-                        console.error("Speech synthesis error:", event);
-                    };
-                    
-                    // Speak the text
-                    window.speechSynthesis.speak(speechUtterance);
-                    
-                    // Workaround for Chrome issue where speechSynthesis pauses after ~15 seconds
-                    // This keeps the synthesis active
-                    clearInterval(speechTimer);
-                    speechTimer = setInterval(() => {
-                        if (!window.speechSynthesis.speaking) {
-                            clearInterval(speechTimer);
-                            return;
-                        }
-                        window.speechSynthesis.pause();
-                        window.speechSynthesis.resume();
-                    }, 10000); // Reset every 10 seconds
-                }
-            }
-            
-            // Start speaking chunks
-            speakNextChunk();
-        }
-
-        // Helper function to split text into manageable chunks
-        function splitTextIntoChunks(text, maxLength = 150) {
-            if (text.length <= maxLength) {
-                return [text];
-            }
-            
-            const chunks = [];
-            let startIndex = 0;
-            
-            while (startIndex < text.length) {
-                // Find a good breaking point (end of sentence or punctuation)
-                let endIndex = Math.min(startIndex + maxLength, text.length);
-                
-                if (endIndex < text.length) {
-                    // Try to find sentence endings or punctuation
-                    const sentenceBreak = text.lastIndexOf('. ', endIndex);
-                    const commaBreak = text.lastIndexOf(', ', endIndex);
-                    const semicolonBreak = text.lastIndexOf('; ', endIndex);
-                    
-                    // Find the closest break point that's after startIndex
-                    let breakPoint = -1;
-                    if (sentenceBreak > startIndex) breakPoint = sentenceBreak + 1; // Include the period
-                    if (commaBreak > startIndex && (breakPoint === -1 || commaBreak > breakPoint)) breakPoint = commaBreak + 1;
-                    if (semicolonBreak > startIndex && (breakPoint === -1 || semicolonBreak > breakPoint)) breakPoint = semicolonBreak + 1;
-                    
-                    // If we found a good break point, use it
-                    if (breakPoint !== -1) {
-                        endIndex = breakPoint;
-                    } else {
-                        // If no punctuation, try to break at a space
-                        const spaceBreak = text.lastIndexOf(' ', endIndex);
-                        if (spaceBreak > startIndex) {
-                            endIndex = spaceBreak + 1;
-                        }
-                    }
-                }
-                
-                chunks.push(text.substring(startIndex, endIndex).trim());
-                startIndex = endIndex;
-            }
-            
-            return chunks;
-        }
-
-        function togglePlayback() {
-            console.log("Toggle playback called");
-            if (window.speechSynthesis.speaking) {
-                console.log("Speech synthesis is speaking, stopping...");
-                window.speechSynthesis.cancel();
-                clearInterval(speechTimer);
-                const playButton = document.getElementById('play-button');
-                const playIcon = document.getElementById('play-icon');
-                if (playButton) playButton.classList.remove('playing');
-                if (playIcon) playIcon.className = 'fas fa-play';
-            } else {
-                console.log("Starting speech...");
-                playQuote();
-            }
-        }
-
-        // Initialize everything when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if speech synthesis is supported
-            if (!window.speechSynthesis) {
-                console.error('Speech synthesis not supported in this browser');
-                const playButton = document.getElementById('play-button');
-                if (playButton) playButton.style.display = 'none';
-                return;
-            }
-            
-            console.log("Speech synthesis is supported, initializing...");
-            
-            // Populate the voice list
-            populateVoiceList();
-            
-            // Multiple approaches to ensure voices are loaded
-            if (window.speechSynthesis.onvoiceschanged !== undefined) {
-                window.speechSynthesis.onvoiceschanged = populateVoiceList;
-            }
-            
-            // Force a reload after a delay
-            setTimeout(populateVoiceList, 1000);
-            
-            // Make sure the play button has the click handler
-            const playButton = document.getElementById('play-button');
-            if (playButton) {
-                playButton.onclick = togglePlayback;
-                console.log("Play button click handler attached");
-            } else {
-                console.error("Play button not found");
-            }
-            
-            // Force voice refresh when the dropdown is clicked
-            const voiceSelect = document.getElementById('voiceSelect');
-            if (voiceSelect) {
-                voiceSelect.addEventListener('click', function() {
-                    if (this.options.length <= 1) {
-                        console.log("Voice select clicked, refreshing voices");
-                        populateVoiceList();
-                    }
-                });
-            }
-        });
-    </script>
-    <script>
-        let searchIndex = null;
-
-        // Load the search index when the page loads
-        window.addEventListener('load', async () => {
-            try {
-                const response = await fetch('/search-index.json');
-                searchIndex = await response.json();
-            } catch (error) {
-                console.error('Failed to load search index:', error);
-            }
-        });
-
-        // Debounce function to limit search frequency
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
-            };
-        }
-
-        // Handle search input with debounce
-        const debounceSearch = debounce((event) => {
-            const searchTerm = event.target.value;
-            if (searchTerm.length >= 2) {
-                performSearch(searchTerm);
-            } else {
-                hideResults();
-            }
-        }, 300);
-
-        // Handle form submission
-        function handleSearch(event) {
-            event.preventDefault();
-            const searchTerm = event.target.querySelector('input').value;
-            if (searchTerm) {
-                performSearch(searchTerm);
-            }
-        }
-
-        // Perform the search
-        function performSearch(searchTerm) {
-            if (!searchIndex) {
-                displayResults([{
-                    title: 'Error',
-                    preview: 'Search index not loaded. Please try again later.',
-                    url: '#'
-                }]);
-                return;
-            }
-
-            const searchRegex = new RegExp(searchTerm, 'gi');
-            const results = searchIndex
-                .filter(page => {
-                    return page.title.match(searchRegex) || 
-                           page.content.match(searchRegex);
-                })
-                .map(page => {
-                    // Find the first match in content for preview
-                    const contentMatch = page.content.toLowerCase().indexOf(searchTerm.toLowerCase());
-                    let preview = page.preview;
-                    
-                    if (contentMatch !== -1) {
-                        const start = Math.max(0, contentMatch - 50);
-                        const end = Math.min(page.content.length, contentMatch + 100);
-                        preview = '...' + page.content.slice(start, end) + '...';
-                    }
-                    
-                    // Highlight matches
-                    preview = preview.replace(searchRegex, match => 
-                        `<span class="highlight">${match}</span>`
-                    );
-                    
-                    return {
-                        title: page.title.replace(searchRegex, match => 
-                            `<span class="highlight">${match}</span>`
-                        ),
-                        preview,
-                        url: page.url
-                    };
-                })
-                .slice(0, 5); // Limit to top 5 results
-
-            displayResults(results);
-        }
-
-        // Display search results
-        function displayResults(results) {
-            const resultsContainer = document.getElementById('searchResults');
-            resultsContainer.innerHTML = '';
-            
-            if (results.length === 0) {
-                resultsContainer.innerHTML = '<div class="result-item">No results found</div>';
-                resultsContainer.style.display = 'block';
-                return;
-            }
-            
-            results.forEach(result => {
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                resultItem.innerHTML = `
-                    <div class="result-title">${result.title}</div>
-                    <div class="result-preview">${result.preview}</div>
-                `;
-                resultItem.addEventListener('click', () => {
-                    window.location.href = result.url;
-                });
-                resultsContainer.appendChild(resultItem);
-            });
-            
-            resultsContainer.style.display = 'block';
-        }
-
-        // Hide results container
-        function hideResults() {
-            document.getElementById('searchResults').style.display = 'none';
-        }
-
-        // Close results when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!event.target.closest('.search-container')) {
-                hideResults();
-            }
-        });
-    </script>
-    <style>
-        /* Audio player button styles */
-        #play-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: #4a4a4a;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            margin-left: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            vertical-align: middle;
-        }
-        
-        #play-button:hover {
-            background: #333;
-            transform: scale(1.05);
-        }
-        
-        #play-button.playing {
-            background: #3a3a3a;
-        }
-        
-        .quote-controls {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-        }
-        
-        .quote-attribution {
-            display: flex;
-            align-items: center;
-        }
-
-        .divider {
-          width: 20%; /* Thinner width */
-          margin: 50px auto; /* Padding on top and bottom */
-          border: none;
-          height: 0.5px; /* Thinner line */
-          background-color: crimson; /* Crimson red */
-          padding-bottom: 0.1rem;
-        }
-    </style>
-    <!-- Font Awesome for play/pause icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <!-- search-index script unchanged -->
+  <script>
+    let searchIndex = null;
+    window.addEventListener('load', async () => {
+      try {
+        const resp = await fetch('/search-index.json');
+        searchIndex = await resp.json();
+      } catch (e) {
+        console.error('Failed to load search index:', e);
+      }
+    });
+    function debounce(fn, wait) {
+      let t;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn.apply(this, args), wait);
+      };
+    }
+    const debounceSearch = debounce((e) => {
+      const term = e.target.value;
+      term.length >= 2 ? performSearch(term) : hideResults();
+    }, 300);
+    function handleSearch(evt) {
+      evt.preventDefault();
+      performSearch(evt.target.querySelector('input').value);
+    }
+    function performSearch(term) {
+      if (!searchIndex) {
+        return displayResults([{
+          title: 'Error',
+          preview: 'Search index not loaded.',
+          url: '#'
+        }]);
+      }
+      const re = new RegExp(term, 'gi');
+      const results = searchIndex
+        .filter(p => p.title.match(re) || p.content.match(re))
+        .map(p => {
+          let preview = p.preview;
+          const idx = p.content.toLowerCase().indexOf(term.toLowerCase());
+          if (idx !== -1) {
+            const start = Math.max(0, idx - 50);
+            const end   = Math.min(p.content.length, idx + 100);
+            preview = '...' + p.content.slice(start, end) + '...';
+          }
+          return {
+            title: p.title.replace(re, m => `<span class="highlight">${m}</span>`),
+            preview: preview.replace(re, m => `<span class="highlight">${m}</span>`),
+            url: p.url
+          };
+        })
+        .slice(0, 5);
+      displayResults(results);
+    }
+    function displayResults(results) {
+      const container = document.getElementById('searchResults');
+      container.innerHTML = '';
+      if (!results.length) {
+        container.innerHTML = '<div class="result-item">No results found</div>';
+        container.style.display = 'block';
+        return;
+      }
+      results.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'result-item';
+        div.innerHTML = `
+          <div class="result-title">${r.title}</div>
+          <div class="result-preview">${r.preview}</div>
+        `;
+        div.addEventListener('click', () => window.location.href = r.url);
+        container.appendChild(div);
+      });
+      container.style.display = 'block';
+    }
+    function hideResults() {
+      document.getElementById('searchResults').style.display = 'none';
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.search-container')) hideResults();
+    });
+  </script>
 </head>
 <body>
-    <header>
-        <h1><i>David Kendall Casey</i></h1>
-        <h3 class="subtitle">Commonplace Book</h3>
-        <div class="search-container">
-            <form class="search-form" onsubmit="handleSearch(event)">
-                <input 
-                    type="search" 
-                    class="search-input" 
-                    placeholder="Search entire site..." 
-                    aria-label="Search"
-                    onkeyup="debounceSearch(event)"
-                >
-            </form>
-            <div class="search-results" id="searchResults"></div>
-        </div>
-    </header>
-
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="commonplace.html">Index</a>
-    </nav>
-
-    <h2>Daily selection</h2>
-    <main class="container">
-    <div id="quote-of-the-day">
-        <p id="quote-header"></p> 
-        <blockquote id="quote-text"></blockquote>
-        <div class="quote-attribution">
-            <p id="quote-source"></p>
-            <button id="play-button" onclick="togglePlayback()" title="Listen to quote">
-                <i id="play-icon" class="fas fa-play"></i>
-            </button>
-        </div>
-        <!-- Voice controls below quote and author -->
-        <div class="voice-control">
-            <label for="voiceSelect"></label>
-            <select id="voiceSelect" class="voice-select" title="Select voice">
-                <option value="">Default Voice</option>
-                <!-- Options will be populated by JavaScript -->
-            </select>
-        </div>
+  <header>
+    <h1><i>David Kendall Casey</i></h1>
+    <h3 class="subtitle">Commonplace Book</h3>
+    <div class="search-container">
+      <form class="search-form" onsubmit="handleSearch(event)">
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Search entire site..."
+          aria-label="Search"
+          onkeyup="debounceSearch(event)"
+        >
+      </form>
+      <div class="search-results" id="searchResults"></div>
     </div>
-</main>
-    <script>
-        // Check if the browser supports speech synthesis
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!window.speechSynthesis) {
-                console.error('Speech synthesis not supported');
-                document.getElementById('play-button').style.display = 'none';
-            }
-        });
-    </script>
+  </header>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="commonplace.html">Index</a>
+  </nav>
+
+  <h2>Daily selection</h2>
+  <main class="container">
+    <div id="quote-of-the-day">
+      <p id="quote-header"></p>
+      <blockquote id="quote-text"></blockquote>
+      <div class="quote-attribution">
+        <p id="quote-source"></p>
+        <button id="play-button" title="Listen to quote">
+          <i id="play-icon" class="fas fa-play"></i>
+        </button>
+      </div>
+      <hr class="divider">
+    </div>
+  </main>
+
+  <script>
+    // 1) Voice initialization
+    let voices = window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => {
+      voices = window.speechSynthesis.getVoices();
+    };
+
+    // 2) Fetch & display one quote per day
+    async function displayDailyQuote() {
+      const pages = [
+        'on-animals.html',
+		'on-art-and-creativity.html',
+		'on-age.html',
+        'on-beauty.html',
+		'on-benevolence.html',
+		'on-crime-and-punishment.html',
+        'on-culture-and-politics.html',
+		'on-existence.html',
+		'on-death.html',
+        'on-education.html',
+		'on-friendship.html',
+		'on-greatness.html',
+        'on-hate.html',
+		'on-health-illness-medicine.html',
+		'on-morality.html',
+        'on-hope.html',
+		'on-introversion.html',
+		'on-joy.html',
+        'on-language.html',
+		'on-love.html',
+		'on-manners.html',
+        'on-justice-and-mercy.html',
+		'on-mind.html',
+		'on-money-and-wealth.html',
+        'on-the-past.html',
+		'on-philosophy.html',
+		'on-race-and-racism.html',
+        'on-reading.html',
+		'on-the-sublime.html',
+		'on-suffering.html',
+        'on-technology.html',
+		'on-truth-and-knowledge.html',
+        'on-war-and-violence.html',
+		'on-work.html',
+		'on-writing.html'
+      ];
+      const today = new Date().toISOString().split('T')[0];
+      let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
+      if (stored.date === today) {
+        displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
+        return;
+      }
+      const page = pages[Math.floor(Math.random() * pages.length)];
+      try {
+        const res  = await fetch(page);
+        const txt  = await res.text();
+        const doc  = new DOMParser().parseFromString(txt,'text/html');
+        const list = doc.querySelectorAll('.quote-entry');
+        if (!list.length) throw new Error(`No quotes in ${page}`);
+        const entry = list[Math.floor(Math.random() * list.length)];
+        const quoteHTML   = entry.querySelector('blockquote').innerHTML;
+        const srcEl       = entry.querySelector('.source');
+        const sourceText  = srcEl ? srcEl.textContent.trim() : 'Unknown Source';
+        const name        = page.replace(/\.html$/,'').replace(/-/g,' ');
+        const formatted   = name.charAt(0).toUpperCase() + name.slice(1);
+        const payload     = { date: today, quoteHTML, sourceText, pageName: formatted, pageURL: page };
+        localStorage.setItem('dailyQuote', JSON.stringify(payload));
+        displayQuote(quoteHTML, sourceText, formatted, page);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function displayQuote(html, src, title, url) {
+      document.getElementById('quote-text').innerHTML    = html;
+      document.getElementById('quote-source').textContent = `— ${src}`;
+      document.getElementById('quote-header').innerHTML   =
+        `From: <a href="${url}" target="_blank" style="color:inherit; text-decoration:none;">
+           ${title}
+         </a>`;
+    }
+
+    // 3) Read‑aloud in a British male voice
+    function readQuoteAloud() {
+      if (!('speechSynthesis' in window)) return console.error('TTS not supported');
+      window.speechSynthesis.cancel();
+      const quote  = document.getElementById('quote-text').innerText.trim();
+      const source = document.getElementById('quote-source').innerText.trim();
+      const utt    = new SpeechSynthesisUtterance(`${quote} ${source}`);
+      utt.rate  = 1;
+      utt.pitch = 1;
+      const avail = voices.length ? voices : window.speechSynthesis.getVoices();
+      const britM = avail.find(v => v.lang==='en-GB' && /male/i.test(v.name));
+      const britF = avail.find(v => v.lang==='en-GB');
+      utt.voice = britM || britF || avail[0];
+      window.speechSynthesis.speak(utt);
+    }
+
+    // 4) On DOM ready: load quote & wire play button
+    document.addEventListener('DOMContentLoaded', () => {
+      displayDailyQuote();
+      const btn  = document.getElementById('play-button');
+      const icon = document.getElementById('play-icon');
+      btn.addEventListener('click', () => {
+        readQuoteAloud();
+        icon.classList.toggle('fa-play');
+        icon.classList.toggle('fa-pause');
+      });
+    });
+  </script>
 </body>
 </html>
