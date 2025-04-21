@@ -85,266 +85,246 @@
     </div>
   </main>
 	  <script>
-	  //
-	  // 1) Search‑index loading & handlers
-	  //
-	  let searchIndex = null;
-	  window.addEventListener('load', async () => {
-		try {
-		  const resp = await fetch('/search-index.json');
-		  searchIndex = await resp.json();
-		} catch (e) {
-		  console.error('Failed to load search index:', e);
-		}
-	  });
-	  function debounce(fn, wait) {
-		let t;
-		return (...args) => {
-		  clearTimeout(t);
-		  t = setTimeout(() => fn.apply(this, args), wait);
-		};
-	  }
-	  const debounceSearch = debounce(e => {
-		const term = e.target.value;
-		term.length >= 2 ? performSearch(term) : hideResults();
-	  }, 300);
-	  function handleSearch(evt) {
-		evt.preventDefault();
-		performSearch(evt.target.querySelector('input').value);
-	  }
-	  function performSearch(term) {
-		if (!searchIndex) {
-		  return displayResults([{ title:'Error', preview:'Search index not loaded.', url:'#' }]);
-		}
-		const re = new RegExp(term,'gi');
-		const results = searchIndex
-		  .filter(p => p.title.match(re) || p.content.match(re))
-		  .map(p => {
-			let preview = p.preview;
-			const idx = p.content.toLowerCase().indexOf(term.toLowerCase());
-			if (idx!==-1) {
-			  const start = Math.max(0, idx-50),
-					end   = Math.min(p.content.length, idx+100);
-			  preview = '...'+p.content.slice(start,end)+'...';
+		async function displayDailyQuote() {
+		  // List of page URLs
+		  const pages = [
+			'on-animals.html','on-art-and-creativity.html','on-age.html',
+			'on-beauty.html','on-benevolence.html','on-crime-and-punishment.html',
+			'on-culture-and-politics.html','on-existence.html','on-death.html',
+			'on-education.html','on-friendship.html','on-greatness.html',
+			'on-hate.html','on-health-illness-medicine.html','on-morality.html',
+			'on-hope.html','on-introversion.html','on-joy.html',
+			'on-language.html','on-love.html','on-manners.html',
+			'on-justice-and-mercy.html','on-mind.html','on-money-and-wealth.html',
+			'on-the-past.html','on-philosophy.html','on-race-and-racism.html',
+			'on-reading.html','on-the-sublime.html','on-suffering.html',
+			'on-technology.html','on-truth-and-knowledge.html',
+			'on-war-and-violence.html','on-work.html','on-writing.html'
+		  ];
+		  
+		  try {
+			// First try - get from localStorage if available for today
+			const today = new Date().toISOString().split('T')[0];
+			let stored = JSON.parse(localStorage.getItem('dailyQuote') || '{}');
+			
+			// Check if we have a valid quote for today or force refresh
+			const forceRefresh = true; // Set to true to always get a new quote (for testing)
+			if (!forceRefresh && stored.date === today && stored.quoteHTML) {
+			  displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
+			  console.log("Retrieved quote from localStorage");
+			  return;
 			}
-			return {
-			  title:   p.title.replace(re,m=>`<span class="highlight">${m}</span>`),
-			  preview: preview.replace(re,m=>`<span class="highlight">${m}</span>`),
-			  url:     p.url
+			
+			// If not in storage or forcing refresh, pick a random page
+			const pageIndex = Math.floor(Math.random() * pages.length);
+			const page = pages[pageIndex];
+			console.log("Fetching quote from page:", page);
+			
+			// Fetch the page content
+			const response = await fetch(page);
+			if (!response.ok) {
+			  throw new Error(`Failed to fetch ${page}: ${response.status}`);
+			}
+			
+			const html = await response.text();
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(html, 'text/html');
+			
+			// Select all quote entries
+			const quoteEntries = doc.querySelectorAll('.quote-entry');
+			if (!quoteEntries || quoteEntries.length === 0) {
+			  throw new Error(`No quotes found in ${page}`);
+			}
+			
+			// Pick a random quote
+			const randomIndex = Math.floor(Math.random() * quoteEntries.length);
+			const randomQuote = quoteEntries[randomIndex];
+			
+			// Extract quote details
+			const quoteHTML = randomQuote.querySelector('blockquote').innerHTML.trim();
+			const sourceElement = randomQuote.querySelector('.source');
+			const sourceText = sourceElement ? sourceElement.textContent.trim() : 'Unknown Source';
+			
+			// Format the page name for display
+			const pageName = page.replace(/\.html$/, '').replace(/-/g, ' ');
+			const formattedPageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+			
+			// Save to localStorage
+			const payload = { 
+			  date: today,
+			  quoteHTML: quoteHTML,
+			  sourceText: sourceText,
+			  pageName: formattedPageName,
+			  pageURL: page
 			};
-		  }).slice(0,5);
-		displayResults(results);
-	  }
-	  function displayResults(results) {
-		const c = document.getElementById('searchResults');
-		c.innerHTML = '';
-		if (!results.length) {
-		  c.innerHTML = '<div class="result-item">No results found</div>';
-		  c.style.display = 'block';
-		  return;
+			
+			localStorage.setItem('dailyQuote', JSON.stringify(payload));
+			
+			// Display the quote
+			displayQuote(quoteHTML, sourceText, formattedPageName, page);
+			console.log("New quote fetched and saved");
+			
+		  } catch (error) {
+			console.error("Error displaying daily quote:", error);
+			
+			// Fallback: Display a default quote if everything fails
+			displayQuote(
+			  "Anything that is in the world when you're born is normal and ordinary and is just a natural part of the way the world works. Anything that's invented between when you're fifteen and thirty-five is new and exciting and revolutionary and you can probably get a career in it. Anything invented after you're thirty-five is against the natural order of things.",
+			  "Douglas Adams",
+			  "On Age",
+			  "on-age.html"
+			);
+		  }
 		}
-		results.forEach(r => {
-		  const d = document.createElement('div');
-		  d.className = 'result-item';
-		  d.innerHTML = `
-			<div class="result-title">${r.title}</div>
-			<div class="result-preview">${r.preview}</div>
-		  `;
-		  d.addEventListener('click',()=>window.location.href=r.url);
-		  c.appendChild(d);
+
+		// Helper function to display the quote on the page
+		function displayQuote(html, source, title, url) {
+		  const quoteText = document.getElementById('quote-text');
+		  const quoteSource = document.getElementById('quote-source');
+		  const quoteHeader = document.getElementById('quote-header');
+		  
+		  if (quoteText) quoteText.innerHTML = html;
+		  if (quoteSource) quoteSource.textContent = `— ${source}`;
+		  if (quoteHeader) {
+			quoteHeader.innerHTML = `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">${title}</a>`;
+		  }
+		  
+		  // Log the values that we're setting for debugging
+		  console.log("Quote text:", html);
+		  console.log("Quote source:", source);
+		  console.log("Quote title:", title);
+		}
+
+		// 2. AUDIO PLAYBACK FIX
+		// Global variable to track speech synthesis state
+		let isSpeaking = false;
+		let currentUtterance = null;
+
+		function readQuoteAloud() {
+		  // First, cancel any ongoing speech
+		  window.speechSynthesis.cancel();
+		  
+		  // Get the quote text and source
+		  const quoteText = document.getElementById('quote-text');
+		  const sourceText = document.getElementById('quote-source');
+		  
+		  // Check if we have quote content
+		  if (!quoteText || !quoteText.innerText || quoteText.innerText.trim() === '') {
+			console.error("No quote content found to read");
+			return;
+		  }
+		  
+		  const quote = quoteText.innerText.trim();
+		  const source = sourceText ? sourceText.innerText.trim() : '';
+		  
+		  // Toggle playback state
+		  if (isSpeaking) {
+			// Stop current speech if it's playing
+			window.speechSynthesis.cancel();
+			isSpeaking = false;
+			updatePlayButton(false);
+			return;
+		  }
+		  
+		  // Create new utterance if we're starting playback
+		  const utterance = new SpeechSynthesisUtterance(`${quote} ${source}`);
+		  utterance.rate = 0.9;  // Slightly slower rate for better clarity
+		  utterance.pitch = 1;
+		  
+		  // Set up event handlers for the utterance
+		  utterance.onend = () => {
+			isSpeaking = false;
+			updatePlayButton(false);
+		  };
+		  
+		  utterance.onerror = () => {
+			console.error('Speech synthesis error occurred');
+			isSpeaking = false;
+			updatePlayButton(false);
+		  };
+		  
+		  // Try to get all available voices
+		  const voices = window.speechSynthesis.getVoices();
+		  
+		  if (voices.length > 0) {
+			// First try: British male voice
+			const britishMale = voices.find(voice => 
+			  voice.lang === 'en-GB' && 
+			  (voice.name.includes('Male') || /\bMale\b/i.test(voice.name))
+			);
+			
+			// Second try: Any English male voice
+			const englishMale = voices.find(voice => 
+			  /^en/.test(voice.lang) && 
+			  (voice.name.includes('Male') || /\bMale\b/i.test(voice.name))
+			);
+			
+			// Third try: Any British voice
+			const britishVoice = voices.find(voice => voice.lang === 'en-GB');
+			
+			// Set the best available voice
+			utterance.voice = britishMale || englishMale || britishVoice || null;
+			
+			if (utterance.voice) {
+			  console.log("Using voice:", utterance.voice.name);
+			} else {
+			  console.log("Using default voice (no specific voice found)");
+			}
+		  } else {
+			console.log("No voices available yet, using default voice");
+		  }
+		  
+		  // Start speech synthesis
+		  window.speechSynthesis.speak(utterance);
+		  currentUtterance = utterance;
+		  isSpeaking = true;
+		  updatePlayButton(true);
+		}
+
+		// Update the play button appearance
+		function updatePlayButton(isPlaying) {
+		  const playIcon = document.getElementById('play-icon');
+		  const playBtn = document.getElementById('play-button');
+		  
+		  if (!playIcon || !playBtn) return;
+		  
+		  if (isPlaying) {
+			playIcon.classList.remove('fa-play');
+			playIcon.classList.add('fa-pause');
+			playBtn.classList.add('playing');
+		  } else {
+			playIcon.classList.remove('fa-pause');
+			playIcon.classList.add('fa-play');
+			playBtn.classList.remove('playing');
+		  }
+		}
+
+		// Handle voice loading in Chrome
+		document.addEventListener('DOMContentLoaded', () => {
+		  // Force load voices for Chrome
+		  if (window.speechSynthesis) {
+			window.speechSynthesis.getVoices();
+		  }
+		  
+		  // Set up play button
+		  const playButton = document.getElementById('play-button');
+		  if (playButton) {
+			playButton.addEventListener('click', () => {
+			  readQuoteAloud();
+			});
+		  }
+		  
+		  // Initialize the quote display
+		  displayDailyQuote();
 		});
-		c.style.display = 'block';
-	  }
-	  function hideResults() {
-		document.getElementById('searchResults').style.display='none';
-	  }
-	  document.addEventListener('click', e=> {
-		if (!e.target.closest('.search-container')) hideResults();
-	  });
 
-	  //
-	  // 2) Daily‑quote loader & display
-	  //
-	  async function displayDailyQuote() {
-		const pages = [
-		  'on-animals.html','on-art-and-creativity.html','on-age.html',
-		  'on-beauty.html','on-benevolence.html','on-crime-and-punishment.html',
-		  'on-culture-and-politics.html','on-existence.html','on-death.html',
-		  'on-education.html','on-friendship.html','on-greatness.html',
-		  'on-hate.html','on-health-illness-medicine.html','on-morality.html',
-		  'on-hope.html','on-introversion.html','on-joy.html',
-		  'on-language.html','on-love.html','on-manners.html',
-		  'on-justice-and-mercy.html','on-mind.html','on-money-and-wealth.html',
-		  'on-the-past.html','on-philosophy.html','on-race-and-racism.html',
-		  'on-reading.html','on-the-sublime.html','on-suffering.html',
-		  'on-technology.html','on-truth-and-knowledge.html',
-		  'on-war-and-violence.html','on-work.html','on-writing.html'
-		];
-		const today = new Date().toISOString().split('T')[0];
-		let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
-		if (stored.date===today) {
-		  displayQuote(stored.quoteHTML,stored.sourceText,stored.pageName,stored.pageURL);
-		  return;
+		// Add event listener for when voices are loaded (Chrome needs this)
+		if (window.speechSynthesis) {
+		  window.speechSynthesis.onvoiceschanged = () => {
+			const voices = window.speechSynthesis.getVoices();
+			console.log("Voices loaded:", voices.length);
+		  };
 		}
-		const page = pages[Math.floor(Math.random()*pages.length)];
-		try {
-		  const res = await fetch(page);
-		  const txt = await res.text();
-		  const doc = new DOMParser().parseFromString(txt,'text/html');
-		  const list = doc.querySelectorAll('.quote-entry');
-		  if (!list.length) throw new Error(`No quotes in ${page}`);
-		  const entry      = list[Math.floor(Math.random()*list.length)];
-		  const quoteHTML  = entry.querySelector('blockquote').innerHTML;
-		  const srcEl      = entry.querySelector('.source');
-		  const sourceText = srcEl? srcEl.textContent.trim() : 'Unknown Source';
-		  const name       = page.replace(/\.html$/,'').replace(/-/g,' ');
-		  const title      = name.charAt(0).toUpperCase()+name.slice(1);
-		  const payload    = { date:today,quoteHTML,sourceText,pageName:title,pageURL:page };
-		  localStorage.setItem('dailyQuote',JSON.stringify(payload));
-		  displayQuote(quoteHTML,sourceText,title,page);
-		} catch(e) {
-		  console.error(e);
-		}
-	  }
-	  function displayQuote(html,src,title,url) {
-		document.getElementById('quote-text').innerHTML    = html;
-		document.getElementById('quote-source').textContent = `— ${src}`;
-		document.getElementById('quote-header').innerHTML   =
-		  `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">
-			${title}
-		   </a>`;
-	  }
-
-	  //
-	  // 3) Read‑aloud
-	  //
-// Global variable to track speech synthesis state
-let isSpeaking = false;
-let currentUtterance = null;
-
-function readQuoteAloud() {
-  // Get the quote text and source
-  const quote = document.getElementById('quote-text').innerText.trim();
-  const src = document.getElementById('quote-source').innerText.trim();
-  
-  // Toggle playback state
-  if (isSpeaking) {
-    // Stop current speech if it's playing
-    window.speechSynthesis.cancel();
-    isSpeaking = false;
-    updatePlayButton(false);
-    return;
-  }
-  
-  // Create new utterance if we're starting playback
-  const utterance = new SpeechSynthesisUtterance(`${quote} ${src}`);
-  utterance.rate = 0.9;  // Slightly slower rate for better clarity
-  utterance.pitch = 1;
-  
-  // Handle voice selection - preferring British male voices
-  let voices = [];
-  
-  // Get available voices
-  const loadVoices = () => {
-    voices = window.speechSynthesis.getVoices();
-    
-    // First try: British male voice
-    const britishMale = voices.find(v => 
-      v.lang === 'en-GB' && 
-      (v.name.includes('Male') || /\bMale\b/i.test(v.name))
-    );
-    
-    // Second try: Any English male voice
-    const englishMale = voices.find(v => 
-      /^en/.test(v.lang) && 
-      (v.name.includes('Male') || /\bMale\b/i.test(v.name))
-    );
-    
-    // Third try: Any British voice
-    const britishVoice = voices.find(v => v.lang === 'en-GB');
-    
-    // Use the best available voice
-    utterance.voice = britishMale || englishMale || britishVoice || null;
-    
-    // Only proceed with speaking if we haven't already started
-    if (!isSpeaking) {
-      startSpeaking(utterance);
-    }
-  };
-  
-  // Start the actual speech
-  const startSpeaking = (utt) => {
-    // Set up event handlers for the utterance
-    utt.onend = () => {
-      isSpeaking = false;
-      updatePlayButton(false);
-    };
-    
-    utt.onerror = () => {
-      console.error('Speech synthesis error occurred');
-      isSpeaking = false;
-      updatePlayButton(false);
-    };
-    
-    // Store the current utterance and start speaking
-    currentUtterance = utt;
-    window.speechSynthesis.speak(utt);
-    isSpeaking = true;
-    updatePlayButton(true);
-  };
-  
-  // Check if voices are already loaded
-  if (voices.length > 0) {
-    loadVoices();
-  } else {
-    // Chrome and some browsers load voices asynchronously
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    
-    // Handle the case where onvoiceschanged doesn't fire (fallback)
-    setTimeout(() => {
-      if (!isSpeaking && voices.length === 0) {
-        voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          loadVoices();
-        } else {
-          // Last resort - just use default voice
-          startSpeaking(utterance);
-        }
-      }
-    }, 1000);
-  }
-}
-
-// Update the play button appearance
-function updatePlayButton(isPlaying) {
-  const playIcon = document.getElementById('play-icon');
-  const playBtn = document.getElementById('play-button');
-  
-  if (isPlaying) {
-    playIcon.classList.remove('fa-play');
-    playIcon.classList.add('fa-pause');
-    playBtn.classList.add('playing');
-  } else {
-    playIcon.classList.remove('fa-pause');
-    playIcon.classList.add('fa-play');
-    playBtn.classList.remove('playing');
-  }
-}
-
-// Initialize event listeners when the document is ready
-document.addEventListener('DOMContentLoaded', () => {
-  // Set up play button click handler
-  const playBtn = document.getElementById('play-button');
-  if (playBtn) {
-    playBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      readQuoteAloud();
-    });
-  }
-});
-	  // search form & input
-	  document.querySelector('.search-form').addEventListener('submit', handleSearch);
-	  document.querySelector('.search-input').addEventListener('keyup', debounceSearch);
 	</script>
 </body>
 </html>
