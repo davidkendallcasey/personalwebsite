@@ -258,78 +258,55 @@
 	  // 3) Daily‑quote loader/display (unchanged)
 	  //
 	  async function displayDailyQuote() {
-		const pages = [
-		  'on-animals.html',
-		  'on-art-and-creativity.html',
-		  'on-age.html',
-		  'on-beauty.html',
-		  'on-benevolence.html',
-		  'on-crime-and-punishment.html',
-		  'on-culture-and-politics.html',
-		  'on-existence.html',
-		  'on-death.html',
-		  'on-education.html',
-		  'on-friendship.html',
-		  'on-greatness.html',
-		  'on-hate.html',
-		  'on-health-illness-medicine.html',
-		  'on-morality.html',
-		  'on-hope.html',
-		  'on-introversion.html',
-		  'on-joy.html',
-		  'on-language.html',
-		  'on-love.html',
-		  'on-manners.html',
-		  'on-justice-and-mercy.html',
-		  'on-mind.html',
-		  'on-money-and-wealth.html',
-		  'on-the-past.html',
-		  'on-philosophy.html',
-		  'on-race-and-racism.html',
-		  'on-reading.html',
-		  'on-the-sublime.html',
-		  'on-suffering.html',
-		  'on-technology.html',
-		  'on-truth-and-knowledge.html',
-		  'on-war-and-violence.html',
-		  'on-work.html',
-		  'on-writing.html',
-		];
-		const today = new Date().toISOString().split('T')[0];
-		let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
+  console.log("⟳ displayDailyQuote()");
+  const pages = [ /* …your list… */ ];
+  const today = new Date().toISOString().split('T')[0];
+  let stored = JSON.parse(localStorage.getItem('dailyQuote') || '{}');
 
-		if (stored.date === today) {
-		  displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
-		  return;
-		}
-		const page = pages[Math.floor(Math.random()*pages.length)];
-		try {
-		  const res = await fetch(page);
-		  const txt = await res.text();
-		  const doc = new DOMParser().parseFromString(txt, 'text/html');
-		  const list = doc.querySelectorAll('.quote-entry');
-		  if (!list.length) throw new Error(`No quotes in ${page}`);
-		  const entry      = list[Math.floor(Math.random()*list.length)];
-		  const quoteHTML  = entry.querySelector('blockquote').innerHTML;
-		  const srcEl      = entry.querySelector('.source');
-		  const sourceText = srcEl ? srcEl.textContent.trim() : 'Unknown Source';
-		  const name       = page.replace(/\.html$/,'').replace(/-/g,' ');
-		  const title      = name.charAt(0).toUpperCase()+name.slice(1);
-		  const payload    = { date: today, quoteHTML, sourceText, pageName: title, pageURL: page };
-		  localStorage.setItem('dailyQuote', JSON.stringify(payload));
-		  displayQuote(quoteHTML, sourceText, title, page);
-		} catch (e) {
-		  console.error(e);
-		}
-	  }
-	  function displayQuote(html, src, title, url) {
-		document.getElementById('quote-text').innerHTML    = html;
-		document.getElementById('quote-source').textContent = `— ${src}`;
-		document.getElementById('quote-header').innerHTML   =
-		  `From: <a href="${url}" target="_blank" style="color:inherit; text-decoration:none;">
-			 ${title}
-		   </a>`;
-	  }
+  if (stored.date === today) {
+    console.log("✔️ Using cached quote");
+    displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
+    return;
+  }
+
+  const page = pages[Math.floor(Math.random() * pages.length)];
+  try {
+    const res = await fetch(page);
+    console.log("Fetched", page, "– status", res.status);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const txt = await res.text();
+    const doc = new DOMParser().parseFromString(txt, "text/html");
+    const entries = doc.querySelectorAll(".quote-entry");
+    console.log("Found", entries.length, "entries in", page);
+
+    if (!entries.length) {
+      // UI fallback
+      document.getElementById("quote-text").textContent = 
+        `No quotes found in ${page}`;
+      return;
+    }
+
+    const entry      = entries[Math.floor(Math.random() * entries.length)];
+    const quoteHTML  = entry.querySelector("blockquote").innerHTML;
+    const srcEl      = entry.querySelector(".source");
+    const sourceText = srcEl ? srcEl.textContent.trim() : "Unknown Source";
+
+    // …format pageName/pageURL as before…
+
+    // cache & display
+    localStorage.setItem(
+      "dailyQuote",
+      JSON.stringify({ date: today, quoteHTML, sourceText, pageName, pageURL })
+    );
+    displayQuote(quoteHTML, sourceText, pageName, pageURL);
+
+  } catch (err) {
+    console.error("❌ displayDailyQuote error:", err);
+    document.getElementById("quote-text").textContent =
+      "Sorry, I couldn’t load today’s quote.";
+  }
+}
 
 	  //
 	  // 4) Read‑aloud with voice‑loading
