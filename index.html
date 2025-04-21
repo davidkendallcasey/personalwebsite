@@ -228,8 +228,8 @@
 		  
 		  // Create new utterance if we're starting playback
 		  const utterance = new SpeechSynthesisUtterance(`${quote} ${source}`);
-		  utterance.rate = 0.9;  // Slightly slower rate for better clarity
-		  utterance.pitch = 1;
+		  utterance.rate = 0.85;  // Slightly slower rate for better clarity
+		  utterance.pitch = 0.8;
 		  
 		  // Set up event handlers for the utterance
 		  utterance.onend = () => {
