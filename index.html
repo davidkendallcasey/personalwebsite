@@ -85,116 +85,119 @@
     </div>
   </main>
 	  <script>
-		async function displayDailyQuote() {
-		  // List of page URLs
-		  const pages = [
-			'on-animals.html','on-art-and-creativity.html','on-age.html',
-			'on-beauty.html','on-benevolence.html','on-crime-and-punishment.html',
-			'on-culture-and-politics.html','on-existence.html','on-death.html',
-			'on-education.html','on-friendship.html','on-greatness.html',
-			'on-hate.html','on-health-illness-medicine.html','on-morality.html',
-			'on-hope.html','on-introversion.html','on-joy.html',
-			'on-language.html','on-love.html','on-manners.html',
-			'on-justice-and-mercy.html','on-mind.html','on-money-and-wealth.html',
-			'on-the-past.html','on-philosophy.html','on-race-and-racism.html',
-			'on-reading.html','on-the-sublime.html','on-suffering.html',
-			'on-technology.html','on-truth-and-knowledge.html',
-			'on-war-and-violence.html','on-work.html','on-writing.html'
-		  ];
-		  
-		  try {
-			// First try - get from localStorage if available for today
-			const today = new Date().toISOString().split('T')[0];
-			let stored = JSON.parse(localStorage.getItem('dailyQuote') || '{}');
-			
-			// Check if we have a valid quote for today or force refresh
-			const forceRefresh = true; // Set to true to always get a new quote (for testing)
-			if (!forceRefresh && stored.date === today && stored.quoteHTML) {
-			  displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
-			  console.log("Retrieved quote from localStorage");
-			  return;
-			}
-			
-			// If not in storage or forcing refresh, pick a random page
-			const pageIndex = Math.floor(Math.random() * pages.length);
-			const page = pages[pageIndex];
-			console.log("Fetching quote from page:", page);
-			
-			// Fetch the page content
-			const response = await fetch(page);
-			if (!response.ok) {
-			  throw new Error(`Failed to fetch ${page}: ${response.status}`);
-			}
-			
-			const html = await response.text();
-			const parser = new DOMParser();
-			const doc = parser.parseFromString(html, 'text/html');
-			
-			// Select all quote entries
-			const quoteEntries = doc.querySelectorAll('.quote-entry');
-			if (!quoteEntries || quoteEntries.length === 0) {
-			  throw new Error(`No quotes found in ${page}`);
-			}
-			
-			// Pick a random quote
-			const randomIndex = Math.floor(Math.random() * quoteEntries.length);
-			const randomQuote = quoteEntries[randomIndex];
-			
-			// Extract quote details
-			const quoteHTML = randomQuote.querySelector('blockquote').innerHTML.trim();
-			const sourceElement = randomQuote.querySelector('.source');
-			const sourceText = sourceElement ? sourceElement.textContent.trim() : 'Unknown Source';
-			
-			// Format the page name for display
-			const pageName = page.replace(/\.html$/, '').replace(/-/g, ' ');
-			const formattedPageName = pageName.charAt(0).toUpperCase() + pageName.slice(1);
-			
-			// Save to localStorage
-			const payload = { 
-			  date: today,
-			  quoteHTML: quoteHTML,
-			  sourceText: sourceText,
-			  pageName: formattedPageName,
-			  pageURL: page
-			};
-			
-			localStorage.setItem('dailyQuote', JSON.stringify(payload));
-			
-			// Display the quote
-			displayQuote(quoteHTML, sourceText, formattedPageName, page);
-			console.log("New quote fetched and saved");
-			
-		  } catch (error) {
-			console.error("Error displaying daily quote:", error);
-			
-			// Fallback: Display a default quote if everything fails
-			displayQuote(
-			  "Anything that is in the world when you're born is normal and ordinary and is just a natural part of the way the world works. Anything that's invented between when you're fifteen and thirty-five is new and exciting and revolutionary and you can probably get a career in it. Anything invented after you're thirty-five is against the natural order of things.",
-			  "Douglas Adams",
-			  "On Age",
-			  "on-age.html"
-			);
-		  }
-		}
+		//
+  // 2) Daily‑quote loader & display
+  //
+  async function displayDailyQuote() {
+    const pages = [
+      'on-animals.html',
+	  'on-art-and-creativity.html',
+	  'on-age.html',
+      'on-beauty.html',
+	  'on-benevolence.html',
+	  'on-crime-and-punishment.html',
+      'on-culture-and-politics.html',
+	  'on-existence.html',
+	  'on-death.html',
+      'on-education.html',
+	  'on-friendship.html',
+	  'on-greatness.html',
+      'on-hate.html',
+	  'on-health-illness-medicine.html',
+	  'on-morality.html',
+      'on-hope.html',
+	  'on-introversion.html',
+	  'on-joy.html',
+      'on-language.html',
+	  'on-love.html',
+	  'on-manners.html',
+      'on-justice-and-mercy.html',
+	  'on-mind.html',
+	  'on-money-and-wealth.html',
+      'on-the-past.html',
+	  'on-philosophy.html',
+	  'on-race-and-racism.html',
+      'on-reading.html',
+	  'on-the-sublime.html',
+	  'on-suffering.html',
+      'on-technology.html',
+	  'on-truth-and-knowledge.html',
+      'on-war-and-violence.html',
+	  'on-work.html',
+	  'on-writing.html'
+    ];
+    const today = new Date().toISOString().split('T')[0];
+    let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
+    
+    // Check if we already have a quote for today
+    if (stored.date === today) {
+      displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
+      return;
+    }
+    
+    // If we don't have a quote for today, get a new one
+    try {
+      // Use a deterministic "random" selection based on the date
+      // This ensures the same quote is selected for everyone on the same day
+      const dateHash = hashDate(today);
+      const pageIndex = dateHash % pages.length;
+      const page = pages[pageIndex];
+      
+      const res = await fetch(page);
+      const txt = await res.text();
+      const doc = new DOMParser().parseFromString(txt,'text/html');
+      const list = doc.querySelectorAll('.quote-entry');
+      
+      if (!list.length) throw new Error(`No quotes in ${page}`);
+      
+      // Use the date hash to deterministically select a quote from the page
+      const quoteIndex = dateHash % list.length;
+      const entry = list[quoteIndex];
+      
+      const quoteHTML = entry.querySelector('blockquote').innerHTML;
+      const srcEl = entry.querySelector('.source');
+      const sourceText = srcEl ? srcEl.textContent.trim() : 'Unknown Source';
+      const name = page.replace(/\.html$/,'').replace(/-/g,' ');
+      const title = name.charAt(0).toUpperCase() + name.slice(1);
+      
+      const payload = { 
+        date: today,
+        quoteHTML,
+        sourceText,
+        pageName: title,
+        pageURL: page 
+      };
+      
+      localStorage.setItem('dailyQuote', JSON.stringify(payload));
+      displayQuote(quoteHTML, sourceText, title, page);
+    } catch(e) {
+      console.error('Error loading daily quote:', e);
+      // If there's an error, try to use the previous quote (even if it's from a different day)
+      if (stored.quoteHTML) {
+        displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
+      }
+    }
+  }
 
-		// Helper function to display the quote on the page
-		function displayQuote(html, source, title, url) {
-		  const quoteText = document.getElementById('quote-text');
-		  const quoteSource = document.getElementById('quote-source');
-		  const quoteHeader = document.getElementById('quote-header');
-		  
-		  if (quoteText) quoteText.innerHTML = html;
-		  if (quoteSource) quoteSource.textContent = `— ${source}`;
-		  if (quoteHeader) {
-			quoteHeader.innerHTML = `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">${title}</a>`;
-		  }
-		  
-		  // Log the values that we're setting for debugging
-		  console.log("Quote text:", html);
-		  console.log("Quote source:", source);
-		  console.log("Quote title:", title);
-		}
+  // Create a simple hash function to get a deterministic "random" number from a date string
+  function hashDate(dateStr) {
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      const char = dateStr.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+  }
 
+  function displayQuote(html, src, title, url) {
+    document.getElementById('quote-text').innerHTML = html;
+    document.getElementById('quote-source').textContent = `— ${src}`;
+    document.getElementById('quote-header').innerHTML = 
+      `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">
+        ${title}
+       </a>`;
+  }
 		// 2. AUDIO PLAYBACK FIX
 		// Global variable to track speech synthesis state
 		let isSpeaking = false;
