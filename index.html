@@ -84,9 +84,9 @@
       <hr class="divider">
     </div>
   </main>
-	  <script>
-		//
-  // 2) Daily‑quote loader & display
+<script>
+  //
+  // 1) Daily-quote loader & display
   //
   async function displayDailyQuote() {
     const pages = [
@@ -198,136 +198,89 @@
         ${title}
        </a>`;
   }
-		// 2. AUDIO PLAYBACK FIX
-		// Global variable to track speech synthesis state
-		let isSpeaking = false;
-		let currentUtterance = null;
 
-		function readQuoteAloud() {
-		  // First, cancel any ongoing speech
-		  window.speechSynthesis.cancel();
-		  
-		  // Get the quote text and source
-		  const quoteText = document.getElementById('quote-text');
-		  const sourceText = document.getElementById('quote-source');
-		  
-		  // Check if we have quote content
-		  if (!quoteText || !quoteText.innerText || quoteText.innerText.trim() === '') {
-			console.error("No quote content found to read");
-			return;
-		  }
-		  
-		  const quote = quoteText.innerText.trim();
-		  const source = sourceText ? sourceText.innerText.trim() : '';
-		  
-		  // Toggle playback state
-		  if (isSpeaking) {
-			// Stop current speech if it's playing
-			window.speechSynthesis.cancel();
-			isSpeaking = false;
-			updatePlayButton(false);
-			return;
-		  }
-		  
-		  // Create new utterance if we're starting playback
-		  const utterance = new SpeechSynthesisUtterance(`${quote} ${source}`);
-		  utterance.rate = 1.0;
-		  utterance.pitch = 0.75;
-		  
-		  // Set up event handlers for the utterance
-		  utterance.onend = () => {
-			isSpeaking = false;
-			updatePlayButton(false);
-		  };
-		  
-		  utterance.onerror = () => {
-			console.error('Speech synthesis error occurred');
-			isSpeaking = false;
-			updatePlayButton(false);
-		  };
-		  
-		  // Try to get all available voices
-		  const voices = window.speechSynthesis.getVoices();
-		  
-		  if (voices.length > 0) {
-			// First try: British male voice
-			const britishMale = voices.find(voice => 
-			  voice.lang === 'en-GB' && 
-			  (voice.name.includes('Male') || /\bMale\b/i.test(voice.name))
-			);
-			
-			// Second try: Any English male voice
-			const englishMale = voices.find(voice => 
-			  /^en/.test(voice.lang) && 
-			  (voice.name.includes('Male') || /\bMale\b/i.test(voice.name))
-			);
-			
-			// Third try: Any British voice
-			const britishVoice = voices.find(voice => voice.lang === 'en-GB');
-			
-			// Set the best available voice
-			utterance.voice = britishMale || englishMale || britishVoice || null;
-			
-			if (utterance.voice) {
-			  console.log("Using voice:", utterance.voice.name);
-			} else {
-			  console.log("Using default voice (no specific voice found)");
-			}
-		  } else {
-			console.log("No voices available yet, using default voice");
-		  }
-		  
-		  // Start speech synthesis
-		  window.speechSynthesis.speak(utterance);
-		  currentUtterance = utterance;
-		  isSpeaking = true;
-		  updatePlayButton(true);
-		}
+  //
+  // 2) Audio playback with improved functionality
+  //
+  
+  // Global variable to track speech synthesis state
+  let isSpeaking = false;
+  let currentUtterance = null;
 
-		// Update the play button appearance
-		function updatePlayButton(isPlaying) {
-		  const playIcon = document.getElementById('play-icon');
-		  const playBtn = document.getElementById('play-button');
-		  
-		  if (!playIcon || !playBtn) return;
-		  
-		  if (isPlaying) {
-			playIcon.classList.remove('fa-play');
-			playIcon.classList.add('fa-pause');
-			playBtn.classList.add('playing');
-		  } else {
-			playIcon.classList.remove('fa-pause');
-			playIcon.classList.add('fa-play');
-			playBtn.classList.remove('playing');
-		  }
-		}
+  // Audio playback function
+  function readQuoteAloud() {
+    if (!('speechSynthesis' in window)) {
+      console.error('TTS not supported');
+      return;
+    }
+    
+    window.speechSynthesis.cancel();
+    const quote = document.getElementById('quote-text').innerText.trim();
+    const src = document.getElementById('quote-source').innerText.trim();
+    const utt = new SpeechSynthesisUtterance(`${quote} ${src}`);
+    utt.rate = 1; 
+    utt.pitch = 1;
+    
+    const avail = window.speechSynthesis.getVoices();
+    const britM = avail.find(v => v.lang === 'en-GB' && /male/i.test(v.name));
+    const engM = avail.find(v => /^en/.test(v.lang) && /male/i.test(v.name));
+    if (britM || engM) utt.voice = britM || engM;
+    
+    // Add event listener for when speech finishes
+    utt.onend = function() {
+      isSpeaking = false;
+      playIcon.classList.remove('fa-pause');
+      playIcon.classList.add('fa-play');
+      playBtn.classList.remove('playing');
+    };
+    
+    window.speechSynthesis.speak(utt);
+  }
 
-		// Handle voice loading in Chrome
-		document.addEventListener('DOMContentLoaded', () => {
-		  // Force load voices for Chrome
-		  if (window.speechSynthesis) {
-			window.speechSynthesis.getVoices();
-		  }
-		  
-		  // Set up play button
-		  const playButton = document.getElementById('play-button');
-		  if (playButton) {
-			playButton.addEventListener('click', () => {
-			  readQuoteAloud();
-			});
-		  }
-		  
-		  // Initialize the quote display
-		  displayDailyQuote();
-		});
+  //
+  // 3) Initialization - runs when page loads
+  //
+  document.addEventListener('DOMContentLoaded', () => {
+    // Force load voices for Chrome
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+    }
+    
+    // Initialize the quote display
+    displayDailyQuote();
+    
+    // Set up play button
+    const playBtn = document.getElementById('play-button');
+    const playIcon = document.getElementById('play-icon');
+    
+    if (playBtn) {
+      playBtn.addEventListener('click', () => {
+        if (isSpeaking) {
+          // If already speaking, stop it
+          window.speechSynthesis.cancel();
+          isSpeaking = false;
+          playIcon.classList.remove('fa-pause');
+          playIcon.classList.add('fa-play');
+          playBtn.classList.remove('playing');
+        } else {
+          // If not speaking, start reading
+          readQuoteAloud();
+          isSpeaking = true;
+          playIcon.classList.remove('fa-play');
+          playIcon.classList.add('fa-pause');
+          playBtn.classList.add('playing');
+        }
+      });
+    }
+  });
 
-		// Add event listener for when voices are loaded (Chrome needs this)
-		if (window.speechSynthesis) {
-		  window.speechSynthesis.onvoiceschanged = () => {
-			const voices = window.speechSynthesis.getVoices();
-			console.log("Voices loaded:", voices.length);
-		  };
-		}
-	</script>
+  // Add event listener for when voices are loaded (Chrome needs this)
+  if (window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = () => {
+      const voices = window.speechSynthesis.getVoices();
+      console.log("Voices loaded:", voices.length);
+    };
+  }
+</script>
 </body>
 </html>
