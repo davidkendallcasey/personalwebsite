@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Sorts+Mill+Goudy:ital@0;1&display=swap');
 /* General Styles */
 body {
-    font-family: Sorts Mill Goudy, serif;
+    font-family: Georgia, serif;
     line-height: 1.6;
     margin: 0;
     padding: 0;
@@ -17,14 +17,14 @@ header {
 }
 
 header h1 {
-    font-size: 2.5rem;
+    font-size: 4rem;
     margin: 0;
     color: #f5f3f0; /* Slightly warmer white for headings */
     letter-spacing: 1px;
 }
 
 .subtitle {
-    font-size: 1.2rem;
+    font-size: 2rem;
     color: #b8b5b2; /* Muted color for subtitle */
     margin: 0.5rem 0 0 0;
     font-style: italic;
@@ -33,7 +33,7 @@ header h1 {
 /* Navigation */
 nav {
     text-align: center;
-    padding: 1rem;
+    padding: 2rem;
     background-color: #222;
     border-bottom: 1px solid #444;
 }
@@ -76,12 +76,11 @@ h2 {
 }
 
 blockquote {
-    font-size: 1.1rem;
+    font-size: 2rem;
     line-height: 1.7;
     margin: 0 0 1rem 0;
     padding: 0;
     color: #e8e6e3;
-    font-style: italic;
 }
 
 .source {
