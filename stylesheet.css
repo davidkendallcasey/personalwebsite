@@ -7,7 +7,7 @@ body {
     padding: 0;
     background-color: #1a1a1a; /* Softer than pure black */
     color: #e8e6e3; /* Warm off-white instead of stark white */
-	font-size: 100%;
+	font-size: 110%; /* Increased from 100% */
 }
 
 /* Header Styles */
@@ -18,21 +18,21 @@ header {
 }
 
 header h1 {
-	font-size: 2.5em;
+	font-size: 2.8em; /* Increased from 2.5em */
     margin: 0;
     color: #f5f3f0; /* Slightly warmer white for headings */
     letter-spacing: 1px;
 }
 
 .subtitle {
-    font-size: 1.875em;
+    font-size: 2.0em; /* Increased from 1.875em */
     color: #b8b5b2; /* Muted color for subtitle */
     margin: 0.5rem 0 0 0;
     font-style: italic;
 }
 
 p {
-	font-size:0.875em
+	font-size: 1.0em; /* Increased from 0.875em */
 }
 
 /* Navigation */
@@ -50,6 +50,7 @@ nav a {
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: all 0.3s ease;
+    font-size: 1.1em; /* Added explicit size for nav links */
 }
 
 nav a:hover {
@@ -69,6 +70,7 @@ h2 {
     border-bottom: 2px solid #8b4c42; /* Darker, more muted red */
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
+    font-size: 1.8em; /* Added explicit size for h2 */
 }
 
 /* Quote Styles */
@@ -81,7 +83,7 @@ h2 {
 }
 
 blockquote {
-    font-size: 0.875em;
+    font-size: 1.0em; /* Increased from 0.875em */
     line-height: 1.7;
     margin: 0 0 1rem 0;
     padding: 0;
@@ -90,12 +92,19 @@ blockquote {
 
 .source {
     text-align: right;
-    font-size: 0.875em;
+    font-size: 1.0em; /* Increased from 0.875em */
     color: #b8b5b2; /* Muted color for attribution */
     margin-top: 1rem;
 }
 
 .work-title {
+    font-style: italic;
+}
+
+/* Ensure work titles are italicized in all contexts */
+span.work-title,
+.source .work-title,
+#quote-source .work-title {
     font-style: italic;
 }
 
@@ -131,6 +140,7 @@ hr.divider {
     border-radius: 4px;
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
+    font-size: 1.0em; /* Added explicit size */
 }
 
 .category-link:hover {
@@ -156,7 +166,7 @@ hr.divider {
 .search-input {
     width: 100%;
     padding: 0.75rem;
-    font-size: 1rem;
+    font-size: 1.1em; /* Increased from 1rem */
     border: 2px solid #444;
     border-radius: 6px;
     background-color: #2a2a2a;
@@ -208,11 +218,12 @@ hr.divider {
     font-weight: bold;
     color: #f5f3f0;
     margin-bottom: 0.25rem;
+    font-size: 1.0em; /* Added explicit size */
 }
 
 .result-preview {
     color: #b8b5b2;
-    font-size: 0.9rem;
+    font-size: 0.95em; /* Increased from 0.9rem */
 }
 
 .highlight {
@@ -235,6 +246,7 @@ hr.divider {
     text-decoration: none;
     margin: 0 0.5rem;
     transition: color 0.3s ease;
+    font-size: 1.0em; /* Added explicit size */
 }
 
 .navigation-links a:hover {
@@ -249,6 +261,7 @@ hr.divider {
     color: #d4d1ce;
     text-decoration: none;
     transition: color 0.3s ease;
+    font-size: 1.0em; /* Added explicit size */
 }
 
 .back-to-commonplace a:hover {
@@ -262,7 +275,7 @@ hr.divider {
 
 #quote-header {
     color: #b8b5b2;
-    font-size: 0.95rem;
+    font-size: 1.05em; /* Increased from 0.95rem */
     margin-bottom: 1rem;
 }
 
@@ -290,13 +303,14 @@ hr.divider {
     color: #e8e6e3;
     border: none;
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    width: 40px; /* Increased from 36px */
+    height: 40px; /* Increased from 36px */
     margin-left: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     vertical-align: middle;
+    font-size: 1.1em; /* Added explicit size for icon */
 }
 
 #play-button:hover {
@@ -306,6 +320,13 @@ hr.divider {
 
 #play-button.playing {
     background: #8b4c42; /* Use accent color when playing */
+}
+
+/* Center the Daily Selection heading */
+.daily-selection-heading {
+    text-align: center;
+    margin: 30px 0;
+    font-size: 2.0em; /* Added explicit size */
 }
 
 /* Responsive Design */
@@ -320,10 +341,19 @@ hr.divider {
     }
     
     header h1 {
-        font-size: 2rem;
+        font-size: 2.2em; /* Increased from 2rem */
     }
     
     .search-container {
         max-width: 100%;
+    }
+    
+    /* Ensure mobile text is still readable */
+    body {
+        font-size: 105%; /* Slightly smaller on mobile but still larger than original */
+    }
+    
+    blockquote {
+        font-size: 0.95em;
     }
 }
