@@ -46,13 +46,17 @@
       height: 0.5px;
       background-color: #8b4c42;
     }
+    /* Center the Daily Selection heading */
+    .daily-selection-heading {
+      text-align: center;
+      margin: 30px 0;
+    }
   </style>
 </head>
 <body>
   <header>
     <h1><i>David Kendall Casey</i></h1>
     <h3 class="subtitle">Commonplace Book</h3>
-
   </header>
 
   <nav>
@@ -60,8 +64,9 @@
     <a href="commonplace.html">Index</a>
   </nav>
 
-  <h2>Daily selection</h2>
   <main class="container">
+    <h2 class="daily-selection-heading">Daily Selection</h2>
+    
     <div id="quote-of-the-day">
       <p id="quote-header"></p>
       <blockquote id="quote-text"></blockquote>
@@ -77,14 +82,14 @@
 
   <script>
     //
-    // 1) Daily‑quote loader & display
+    // 1) Daily‑quote loader & display with improved rotation
     //
     async function displayDailyQuote() {
       const pages = [
         'on-animals.html','on-art-and-creativity.html','on-age.html',
         'on-beauty.html','on-benevolence.html','on-crime-and-punishment.html',
         'on-culture-and-politics.html','on-existence.html','on-death.html',
-        'on-education.html','on-freedom','on-friendship.html','on-greatness.html',
+        'on-education.html','on-freedom.html','on-friendship.html','on-greatness.html',
         'on-hate.html','on-health-illness-medicine.html','on-morality.html',
         'on-hope.html','on-introversion.html','on-joy.html',
         'on-language.html','on-love.html','on-manners.html',
@@ -94,44 +99,110 @@
         'on-technology.html','on-truth-and-knowledge.html',
         'on-war-and-violence.html','on-work.html','on-writing.html'
       ];
+      
       const today = new Date().toISOString().split('T')[0];
       let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
-      if (stored.date===today) {
-        displayQuote(stored.quoteHTML,stored.sourceText,stored.pageName,stored.pageURL);
+      
+      if (stored.date === today) {
+        displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
         return;
       }
-      const page = pages[Math.floor(Math.random()*pages.length)];
-      try {
-        const res = await fetch(page);
-        const txt = await res.text();
-        const doc = new DOMParser().parseFromString(txt,'text/html');
-        const list = doc.querySelectorAll('.quote-entry');
-        if (!list.length) throw new Error(`No quotes in ${page}`);
-        const entry      = list[Math.floor(Math.random()*list.length)];
-        const quoteHTML  = entry.querySelector('blockquote').innerHTML;
-        const srcEl      = entry.querySelector('.source');
-        const sourceText = srcEl? srcEl.textContent.trim() : 'Unknown Source';
-        const name       = page.replace(/\.html$/,'').replace(/-/g,' ');
-        const title      = name.charAt(0).toUpperCase()+name.slice(1);
-        const payload    = { date:today,quoteHTML,sourceText,pageName:title,pageURL:page };
-        localStorage.setItem('dailyQuote',JSON.stringify(payload));
-        displayQuote(quoteHTML,sourceText,title,page);
-      } catch(e) {
-        console.error(e);
+
+      // Get quote history to avoid repetition
+      let quoteHistory = JSON.parse(localStorage.getItem('quoteHistory') || '[]');
+      const maxHistorySize = 50; // Remember last 50 quotes
+      
+      let attempts = 0;
+      let maxAttempts = 20;
+      let selectedQuote = null;
+
+      while (!selectedQuote && attempts < maxAttempts) {
+        attempts++;
+        
+        // Pick a random page
+        const page = pages[Math.floor(Math.random() * pages.length)];
+        
+        try {
+          const res = await fetch(page);
+          const txt = await res.text();
+          const doc = new DOMParser().parseFromString(txt, 'text/html');
+          const list = doc.querySelectorAll('.quote-entry');
+          
+          if (!list.length) continue;
+          
+          // Create unique identifier for each quote (first 50 chars of text)
+          const candidates = Array.from(list).map((entry, index) => {
+            const quoteText = entry.querySelector('blockquote').innerText.trim();
+            const quoteId = `${page}-${index}-${quoteText.substring(0, 50)}`;
+            return { entry, quoteId, page };
+          });
+          
+          // Filter out recently used quotes
+          const availableQuotes = candidates.filter(candidate => 
+            !quoteHistory.includes(candidate.quoteId)
+          );
+          
+          // If all quotes from this page were recently used, try a different page
+          if (availableQuotes.length === 0) continue;
+          
+          // Select a random quote from available ones
+          const selected = availableQuotes[Math.floor(Math.random() * availableQuotes.length)];
+          const entry = selected.entry;
+          const quoteHTML = entry.querySelector('blockquote').innerHTML;
+          const srcEl = entry.querySelector('.source');
+          const sourceText = srcEl ? srcEl.textContent.trim() : 'Unknown Source';
+          const name = page.replace(/\.html$/, '').replace(/-/g, ' ');
+          const title = name.charAt(0).toUpperCase() + name.slice(1);
+          
+          // Update quote history
+          quoteHistory.unshift(selected.quoteId);
+          if (quoteHistory.length > maxHistorySize) {
+            quoteHistory = quoteHistory.slice(0, maxHistorySize);
+          }
+          localStorage.setItem('quoteHistory', JSON.stringify(quoteHistory));
+          
+          // Store today's quote
+          const payload = { 
+            date: today, 
+            quoteHTML, 
+            sourceText, 
+            pageName: title, 
+            pageURL: page,
+            quoteId: selected.quoteId
+          };
+          localStorage.setItem('dailyQuote', JSON.stringify(payload));
+          
+          selectedQuote = { quoteHTML, sourceText, title, page };
+          
+        } catch(e) {
+          console.error(`Error loading ${page}:`, e);
+        }
+      }
+      
+      // Fallback if we couldn't find a unique quote
+      if (!selectedQuote) {
+        console.warn('Could not find unique quote, using fallback');
+        // Clear history and try once more
+        localStorage.removeItem('quoteHistory');
+        if (attempts < maxAttempts + 5) {
+          return displayDailyQuote();
+        }
+      } else {
+        displayQuote(selectedQuote.quoteHTML, selectedQuote.sourceText, selectedQuote.title, selectedQuote.page);
       }
     }
 
-    function displayQuote(html,src,title,url) {
-      document.getElementById('quote-text').innerHTML    = html;
+    function displayQuote(html, src, title, url) {
+      document.getElementById('quote-text').innerHTML = html;
       document.getElementById('quote-source').textContent = `— ${src}`;
-      document.getElementById('quote-header').innerHTML   =
+      document.getElementById('quote-header').innerHTML =
         `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">
           ${title}
          </a>`;
     }
 
     //
-    // 3) Fixed Read‑aloud functionality
+    // 2) Fixed Read‑aloud functionality
     //
     let currentUtterance = null;
     let isPlaying = false;
@@ -258,7 +329,7 @@
     });
 
     //
-    // 4) Init: load quote, hook search, pre-load voices
+    // 3) Init: load quote, hook search, pre-load voices
     //
     displayDailyQuote();
 
@@ -271,8 +342,6 @@
         playBtn.addEventListener('click', readQuoteAloud);
       }
     });
-
-    // Search form & input - removed since we're not using search functionality
   </script>
 </body>
 </html>
