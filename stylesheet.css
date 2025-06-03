@@ -1,322 +1,326 @@
 @import url('https://fonts.googleapis.com/css2?family=Sorts+Mill+Goudy:ital@0;1&display=swap');
+/* General Styles */
 body {
-            background: black;
-            font-family: 'Sorts Mill Goudy', serif; 
-			color: white;
-            margin: 0;
-            padding: 0;
-            line-height: 1.7;
-            font-size: 21px;
-        }
-
-.container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 2rem;
-			color: white;
-        }
-		
-.divider {
-  width: 30%; /* Makes it centered */
-  margin: 50px auto; /* Padding on top and bottom */
-  border: none;
-  height: 0.1px;
-  background-color: red;
-  padding-bottom: 0.1rem;
+    font-family: Sorts Mill Goudy, serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #1a1a1a; /* Softer than pure black */
+    color: #e8e6e3; /* Warm off-white instead of stark white */
 }
 
+/* Header Styles */
 header {
-            position: relative;
-			text-align: center;
-			color: white;
-            padding: 6rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    text-align: center;
+    padding: 2rem 1rem;
+    border-bottom: 1px solid #444;
+}
 
-h1 {
-			font-family: 'TeX Gyre Schola', serif;
-			color: white;
-            font-size: 3rem;
-            font-weight: normal;
-            margin: 0;
-			padding-bottom: 0.5rem;
-        }
-
-h2 {
-			font-family: 'TeX Gyre Schola', serif;
-			color: white;
-            font-size: 2.5rem;
-			font-style: italic;
-            font-weight: normal;
-			text-align: center;
-            margin: 1rem 0;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-h3 {
-			font-family: 'Sorts Mill Goudy', serif;
-			color: lightgray;
-            font-size: 2.0rem;
-            font-weight: normal;
-            margin: 1rem 0;
-        }
-nav {
-            text-align: center;
-            padding: 1rem 0;
-			border-top: 1px solid red;
-            border-bottom: 1px solid red;
-			margin-bottom: 2rem;
-        }
-
-nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 1.5rem;
-            font-size: 1.2rem;
-        }
-
-nav a:hover {
-            opacity: 0.7;
-        }
-
-blockquote {
-			color: solid white;
-            border-left: 2px solid white;
-            margin: 0;
-            padding-left: 1.5rem;
-        }
-
-.source {
-            text-align: right;
-            color: white;
-            margin-top: 1rem;
-        }
-
-.work-title {
-            font-style: italic;
-        }
-
-.quote-container {
-            margin-bottom: 4rem;
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeIn 0.8s ease forwards;
-        }
-		
-.quote-header a {
-			color: white;
-			text-decoration: underline;
-		}
-
-.quote-header a:hover {
-			color: lightgray;
-		}
+header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #f5f3f0; /* Slightly warmer white for headings */
+    letter-spacing: 1px;
+}
 
 .subtitle {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1.2rem;
-            margin-top: 1rem;
-        }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-.category-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9em;
-            margin-left: 0.5em;
-        }
-
-@media (max-width: 768px) {
-            body {
-                font-size: 16px;
-            }
-
-            nav a {
-                display: block;
-                margin: 0.5rem 0;
-            }
-
-            header {
-                padding: 3rem 1rem;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-			}
-}
-			
-.search-container {
-			position: absolute;
-			top: 10px;
-			right: 10px;
-			padding: 0.5rem;
-			width: auto;
-			background: transparent; 
-			box-shadow: none; 
-			z-index: 1000;
-		}
-
-.search-form {
-			display: flex;
-			gap: 0.5rem;
-		}
-
-.search-input {
-			padding: 0.5rem 1rem;
-			border: none; /* Removed border */
-			border-radius: 4px;
-			font-size: 1rem;
-			background-color: #f3f4f6; /* Added light gray background */
-		}
-
-.search-input:focus {
-			outline: none;
-			border-color: #007bff;
-		}
-
-.search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            max-width: 600px;
-            margin: 0.5rem auto;
-            background: white;
-            border-radius: 4px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: none;
-        }
-
-.result-item {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-        }
-
-.result-item:hover {
-            background: #f5f5f5;
-        }
-
-.result-item:last-child {
-            border-bottom: none;
-        }
-
-.result-title {
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-        }
-
-.result-preview {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-.highlight {
-            background-color: yellow;
-            padding: 0 2px;
-}
-/* Three-column grid layout */
-.categories-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr; /* Creates three equal columns */
-  gap: 20px; /* Space between columns */
+    font-size: 1.2rem;
+    color: #b8b5b2; /* Muted color for subtitle */
+    margin: 0.5rem 0 0 0;
+    font-style: italic;
 }
 
-/* Style for each category item */
-.category-item {
-  margin-bottom: 15px;
+/* Navigation */
+nav {
+    text-align: center;
+    padding: 1rem;
+    background-color: #222;
+    border-bottom: 1px solid #444;
 }
 
-/* Style for the category links */
-.category-link { 
-	color: white !important; /* Make links white */
-  display: block;
-  text-decoration: none;
-  padding: 8px 12px;
-  /* Add other styling like colors, borders, etc. */
+nav a {
+    color: #d4d1ce; /* Softer link color */
+    text-decoration: none;
+    margin: 0 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
 }
 
-.category-link:hover {
-    color: #e0e0e0 !important; /* Light gray on hover */
+nav a:hover {
+    background-color: #333;
+    color: #f5f3f0;
 }
 
-#quote-header, 
-#quote-header a {
-    color: #e0e0e0 !important; /* Light gray text that will show up on black background */
+/* Main Content */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
 }
 
-#quote-source {
-    color: #e0e0e0 !important; /* Light gray for source text as well */
+h2 {
+    color: #f5f3f0;
+    border-bottom: 2px solid #8b4c42; /* Darker, more muted red */
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Quote Styles */
+.quote-entry {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #242424; /* Subtle background for quotes */
+    border-radius: 8px;
+    border-left: 4px solid #8b4c42; /* Matching muted red accent */
+}
+
+blockquote {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin: 0 0 1rem 0;
+    padding: 0;
+    color: #e8e6e3;
+    font-style: italic;
 }
 
 .source {
-    color: #e0e0e0 !important; /* Light gray color */
     text-align: right;
+    font-size: 0.95rem;
+    color: #b8b5b2; /* Muted color for attribution */
     margin-top: 1rem;
 }
 
 .work-title {
-    color: #e0e0e0 !important; /* Light gray color */
     font-style: italic;
 }
 
-.voice-control {
-    margin-top: 25px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+/* Dividers */
+.divider {
+    width: 20%;
+    margin: 50px auto;
+    border: none;
+    height: 0.5px;
+    background-color: #8b4c42; /* Softer, darker red */
 }
 
-.voice-control label {
-    color: #e0e0e0;
-    margin-right: 10px;
+hr.divider {
+    background-color: #8b4c42;
 }
 
-.voice-select {
-    padding: 5px;
-    background: #333;
-    color: #e0e0e0;
-    border: 1px solid #555;
+/* Categories Grid */
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.category-item {
+    margin-bottom: 0.5rem;
+}
+
+.category-link {
+    color: #d4d1ce;
+    text-decoration: none;
+    padding: 0.5rem;
+    display: block;
     border-radius: 4px;
-    max-width: 300px;
-    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
 }
 
-.voice-settings {
-    display: flex;
-    gap: 15px;
-    font-size: 0.85em;
-    color: #e0e0e0;
+.category-link:hover {
+    background-color: #2a2a2a;
+    color: #f5f3f0;
+    border-left-color: #8b4c42;
+    padding-left: 0.75rem;
 }
 
-.voice-settings label {
+/* Search Styles */
+.search-container {
+    margin-top: 1.5rem;
+    position: relative;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-form {
+    margin: 0;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 2px solid #444;
+    border-radius: 6px;
+    background-color: #2a2a2a;
+    color: #e8e6e3;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #8b4c42;
+}
+
+.search-input::placeholder {
+    color: #888;
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    margin-top: 0.25rem;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.result-item {
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.result-item:hover {
+    background-color: #333;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-title {
+    font-weight: bold;
+    color: #f5f3f0;
+    margin-bottom: 0.25rem;
+}
+
+.result-preview {
+    color: #b8b5b2;
+    font-size: 0.9rem;
+}
+
+.highlight {
+    background-color: #8b4c42;
+    color: #fff;
+    padding: 0 0.2rem;
+    border-radius: 2px;
+}
+
+/* Navigation Links */
+.navigation-links {
+    text-align: center;
+    margin: 3rem 0 2rem 0;
+    padding-top: 2rem;
+    border-top: 1px solid #444;
+}
+
+.navigation-links a {
+    color: #d4d1ce;
+    text-decoration: none;
+    margin: 0 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.navigation-links a:hover {
+    color: #f5f3f0;
+}
+
+.back-to-commonplace {
+    margin-bottom: 2rem;
+}
+
+.back-to-commonplace a {
+    color: #d4d1ce;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.back-to-commonplace a:hover {
+    color: #f5f3f0;
+}
+
+/* Daily Quote Styles */
+#quote-of-the-day {
+    margin-bottom: 2rem;
+}
+
+#quote-header {
+    color: #b8b5b2;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+#quote-header a {
+    color: #d4d1ce;
+    transition: color 0.3s ease;
+}
+
+#quote-header a:hover {
+    color: #f5f3f0;
+}
+
+/* Quote Attribution with Play Button */
+.quote-attribution {
     display: flex;
     align-items: center;
-    gap: 5px;
+    margin-top: 10px;
 }
 
-.voice-settings input {
-    width: 80px;
+#play-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #444; /* Softer button color */
+    color: #e8e6e3;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    vertical-align: middle;
 }
 
-/* Make all links white regardless of visited status */
-a {
-    color: white;
+#play-button:hover {
+    background: #555;
+    transform: scale(1.05);
 }
 
-a:visited {
-    color: white;
+#play-button.playing {
+    background: #8b4c42; /* Use accent color when playing */
 }
 
-/* Optional: Add a hover effect */
-a:hover {
-    color: #cccccc; /* Light gray on hover */
+/* Responsive Design */
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .container {
+        padding: 1rem;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .search-container {
+        max-width: 100%;
+    }
 }
