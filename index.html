@@ -15,8 +15,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: #4a4a4a;
-      color: white;
+      background: #444;
+      color: #e8e6e3;
       border: none;
       border-radius: 50%;
       width: 36px;
@@ -24,15 +24,15 @@
       margin-left: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
       vertical-align: middle;
     }
     #play-button:hover {
-      background: #333;
+      background: #555;
       transform: scale(1.05);
     }
     #play-button.playing {
-      background: #3a3a3a;
+      background: #8b4c42;
     }
     .quote-attribution {
       display: flex;
@@ -44,7 +44,7 @@
       margin: 50px auto;
       border: none;
       height: 0.5px;
-      background-color: crimson;
+      background-color: #8b4c42;
     }
   </style>
 </head>
@@ -52,17 +52,7 @@
   <header>
     <h1><i>David Kendall Casey</i></h1>
     <h3 class="subtitle">Commonplace Book</h3>
-    <div class="search-container">
-      <form class="search-form">
-        <input
-          type="search"
-          class="search-input"
-          placeholder="Search entire site..."
-          aria-label="Search"
-        >
-      </form>
-      <div class="search-results" id="searchResults"></div>
-    </div>
+
   </header>
 
   <nav>
@@ -84,206 +74,205 @@
       <hr class="divider">
     </div>
   </main>
-<script>
-  //
-  // 1) Daily-quote loader & display
-  //
-  async function displayDailyQuote() {
-    const pages = [
-      'on-animals.html',
-	  'on-art-and-creativity.html',
-	  'on-age.html',
-      'on-beauty.html',
-	  'on-benevolence.html',
-	  'on-crime-and-punishment.html',
-      'on-culture-and-politics.html',
-	  'on-existence.html',
-	  'on-death.html',
-      'on-education.html',
-	  'on-friendship.html',
-    'on-freedom.html',
-	  'on-greatness.html',
-      'on-hate.html',
-	  'on-health-illness-medicine.html',
-	  'on-morality.html',
-      'on-hope.html',
-	  'on-history.html',
-	  'on-introversion.html',
-	  'on-joy.html',
-      'on-language.html',
-	  'on-love.html',
-	  'on-manners.html',
-      'on-justice-and-mercy.html',
-	  'on-mind.html',
-	  'on-money-and-wealth.html',
-      'on-the-past.html',
-	  'on-philosophy.html',
-	  'on-purpose.html',
-	  'on-race-and-racism.html',
-      'on-reading.html',
-	  'on-the-sublime.html',
-	  'on-suffering.html',
-      'on-technology.html',
-	  'on-truth-and-knowledge.html',
-      'on-war-and-violence.html',
-	  'on-work.html',
-	  'on-writing.html'
-    ];
-    const today = new Date().toISOString().split('T')[0];
-    let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
-    
-    // Check if we already have a quote for today
-    if (stored.date === today) {
-      displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
-      return;
-    }
-    
-    // If we don't have a quote for today, get a new one
-    try {
-      // Use a deterministic "random" selection based on the date
-      // This ensures the same quote is selected for everyone on the same day
-      const dateHash = hashDate(today);
-      const pageIndex = dateHash % pages.length;
-      const page = pages[pageIndex];
-      
-      const res = await fetch(page);
-      const txt = await res.text();
-      const doc = new DOMParser().parseFromString(txt,'text/html');
-      const list = doc.querySelectorAll('.quote-entry');
-      
-      if (!list.length) throw new Error(`No quotes in ${page}`);
-      
-      // Use the date hash to deterministically select a quote from the page
-      const quoteIndex = dateHash % list.length;
-      const entry = list[quoteIndex];
-      
-      const quoteHTML = entry.querySelector('blockquote').innerHTML;
-      const srcEl = entry.querySelector('.source');
-      const sourceText = srcEl ? srcEl.textContent.trim() : 'Unknown Source';
-      const name = page.replace(/\.html$/,'').replace(/-/g,' ');
-      const title = name.charAt(0).toUpperCase() + name.slice(1);
-      
-      const payload = { 
-        date: today,
-        quoteHTML,
-        sourceText,
-        pageName: title,
-        pageURL: page 
-      };
-      
-      localStorage.setItem('dailyQuote', JSON.stringify(payload));
-      displayQuote(quoteHTML, sourceText, title, page);
-    } catch(e) {
-      console.error('Error loading daily quote:', e);
-      // If there's an error, try to use the previous quote (even if it's from a different day)
-      if (stored.quoteHTML) {
-        displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
+
+  <script>
+    //
+    // 1) Daily‑quote loader & display
+    //
+    async function displayDailyQuote() {
+      const pages = [
+        'on-animals.html','on-art-and-creativity.html','on-age.html',
+        'on-beauty.html','on-benevolence.html','on-crime-and-punishment.html',
+        'on-culture-and-politics.html','on-existence.html','on-death.html',
+        'on-education.html','on-freedom','on-friendship.html','on-greatness.html',
+        'on-hate.html','on-health-illness-medicine.html','on-morality.html',
+        'on-hope.html','on-introversion.html','on-joy.html',
+        'on-language.html','on-love.html','on-manners.html',
+        'on-justice-and-mercy.html','on-mind.html','on-money-and-wealth.html',
+        'on-the-past.html','on-philosophy.html','on-race-and-racism.html',
+        'on-reading.html','on-the-sublime.html','on-suffering.html',
+        'on-technology.html','on-truth-and-knowledge.html',
+        'on-war-and-violence.html','on-work.html','on-writing.html'
+      ];
+      const today = new Date().toISOString().split('T')[0];
+      let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
+      if (stored.date===today) {
+        displayQuote(stored.quoteHTML,stored.sourceText,stored.pageName,stored.pageURL);
+        return;
+      }
+      const page = pages[Math.floor(Math.random()*pages.length)];
+      try {
+        const res = await fetch(page);
+        const txt = await res.text();
+        const doc = new DOMParser().parseFromString(txt,'text/html');
+        const list = doc.querySelectorAll('.quote-entry');
+        if (!list.length) throw new Error(`No quotes in ${page}`);
+        const entry      = list[Math.floor(Math.random()*list.length)];
+        const quoteHTML  = entry.querySelector('blockquote').innerHTML;
+        const srcEl      = entry.querySelector('.source');
+        const sourceText = srcEl? srcEl.textContent.trim() : 'Unknown Source';
+        const name       = page.replace(/\.html$/,'').replace(/-/g,' ');
+        const title      = name.charAt(0).toUpperCase()+name.slice(1);
+        const payload    = { date:today,quoteHTML,sourceText,pageName:title,pageURL:page };
+        localStorage.setItem('dailyQuote',JSON.stringify(payload));
+        displayQuote(quoteHTML,sourceText,title,page);
+      } catch(e) {
+        console.error(e);
       }
     }
-  }
 
-  // Create a simple hash function to get a deterministic "random" number from a date string
-  function hashDate(dateStr) {
-    let hash = 0;
-    for (let i = 0; i < dateStr.length; i++) {
-      const char = dateStr.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+    function displayQuote(html,src,title,url) {
+      document.getElementById('quote-text').innerHTML    = html;
+      document.getElementById('quote-source').textContent = `— ${src}`;
+      document.getElementById('quote-header').innerHTML   =
+        `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">
+          ${title}
+         </a>`;
     }
-    return Math.abs(hash);
-  }
 
-  function displayQuote(html, src, title, url) {
-    document.getElementById('quote-text').innerHTML = html;
-    document.getElementById('quote-source').textContent = `— ${src}`;
-    document.getElementById('quote-header').innerHTML = 
-      `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">
-        ${title}
-       </a>`;
-  }
+    //
+    // 3) Fixed Read‑aloud functionality
+    //
+    let currentUtterance = null;
+    let isPlaying = false;
 
-  //
-  // 2) Audio playback with improved functionality
-  //
-  
-  // Global variable to track speech synthesis state
-  let isSpeaking = false;
-  let currentUtterance = null;
-
-  // Audio playback function
-  function readQuoteAloud() {
-    if (!('speechSynthesis' in window)) {
-      console.error('TTS not supported');
-      return;
-    }
-    
-    window.speechSynthesis.cancel();
-    const quote = document.getElementById('quote-text').innerText.trim();
-    const src = document.getElementById('quote-source').innerText.trim();
-    const utt = new SpeechSynthesisUtterance(`${quote} ${src}`);
-    utt.rate = 1; 
-    utt.pitch = 1;
-    
-    const avail = window.speechSynthesis.getVoices();
-    const britM = avail.find(v => v.lang === 'en-GB' && /male/i.test(v.name));
-    const engM = avail.find(v => /^en/.test(v.lang) && /male/i.test(v.name));
-    if (britM || engM) utt.voice = britM || engM;
-    
-    // Add event listener for when speech finishes
-    utt.onend = function() {
-      isSpeaking = false;
-      playIcon.classList.remove('fa-pause');
-      playIcon.classList.add('fa-play');
-      playBtn.classList.remove('playing');
-    };
-    
-    window.speechSynthesis.speak(utt);
-  }
-
-  //
-  // 3) Initialization - runs when page loads
-  //
-  document.addEventListener('DOMContentLoaded', () => {
-    // Force load voices for Chrome
-    if (window.speechSynthesis) {
-      window.speechSynthesis.getVoices();
-    }
-    
-    // Initialize the quote display
-    displayDailyQuote();
-    
-    // Set up play button
-    const playBtn = document.getElementById('play-button');
-    const playIcon = document.getElementById('play-icon');
-    
-    if (playBtn) {
-      playBtn.addEventListener('click', () => {
-        if (isSpeaking) {
-          // If already speaking, stop it
-          window.speechSynthesis.cancel();
-          isSpeaking = false;
-          playIcon.classList.remove('fa-pause');
-          playIcon.classList.add('fa-play');
-          playBtn.classList.remove('playing');
+    // Wait for voices to load
+    function waitForVoices() {
+      return new Promise((resolve) => {
+        if (speechSynthesis.getVoices().length > 0) {
+          resolve();
         } else {
-          // If not speaking, start reading
-          readQuoteAloud();
-          isSpeaking = true;
-          playIcon.classList.remove('fa-play');
-          playIcon.classList.add('fa-pause');
-          playBtn.classList.add('playing');
+          speechSynthesis.addEventListener('voiceschanged', resolve, { once: true });
         }
       });
     }
-  });
 
-  // Add event listener for when voices are loaded (Chrome needs this)
-  if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = () => {
-      const voices = window.speechSynthesis.getVoices();
-      console.log("Voices loaded:", voices.length);
-    };
-  }
-</script>
+    // Get the best available voice
+    function getBestVoice() {
+      const voices = speechSynthesis.getVoices();
+      
+      // Prefer British male voices, then any English male voices, then any English voices
+      const britishMale = voices.find(v => 
+        v.lang.startsWith('en-GB') && v.name.toLowerCase().includes('male')
+      );
+      
+      const englishMale = voices.find(v => 
+        v.lang.startsWith('en') && v.name.toLowerCase().includes('male')
+      );
+      
+      const anyEnglish = voices.find(v => v.lang.startsWith('en'));
+      
+      return britishMale || englishMale || anyEnglish || voices[0];
+    }
+
+    // Read quote aloud with proper state management
+    async function readQuoteAloud() {
+      if (!('speechSynthesis' in window)) {
+        console.error('Text-to-speech not supported');
+        return;
+      }
+
+      // If currently playing, stop
+      if (isPlaying) {
+        speechSynthesis.cancel();
+        resetPlayButton();
+        return;
+      }
+
+      // Wait for voices to be available
+      await waitForVoices();
+
+      // Get the quote text
+      const quoteText = document.getElementById('quote-text').innerText.trim();
+      const sourceText = document.getElementById('quote-source').innerText.trim();
+      const fullText = `${quoteText} ${sourceText}`;
+
+      // Create utterance
+      currentUtterance = new SpeechSynthesisUtterance(fullText);
+      currentUtterance.rate = 0.9; // Slightly slower for better clarity
+      currentUtterance.pitch = 1;
+      currentUtterance.volume = 1;
+
+      // Set the best voice
+      const bestVoice = getBestVoice();
+      if (bestVoice) {
+        currentUtterance.voice = bestVoice;
+      }
+
+      // Set up event handlers
+      currentUtterance.onstart = () => {
+        isPlaying = true;
+        updatePlayButtonState(true);
+      };
+
+      currentUtterance.onend = () => {
+        isPlaying = false;
+        resetPlayButton();
+      };
+
+      currentUtterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+        isPlaying = false;
+        resetPlayButton();
+      };
+
+      currentUtterance.onpause = () => {
+        isPlaying = false;
+        resetPlayButton();
+      };
+
+      // Start speaking
+      speechSynthesis.speak(currentUtterance);
+    }
+
+    // Update play button visual state
+    function updatePlayButtonState(playing) {
+      const playBtn = document.getElementById('play-button');
+      const playIcon = document.getElementById('play-icon');
+      
+      if (playing) {
+        playIcon.classList.remove('fa-play');
+        playIcon.classList.add('fa-pause');
+        playBtn.classList.add('playing');
+        playBtn.title = 'Stop reading';
+      } else {
+        playIcon.classList.remove('fa-pause');
+        playIcon.classList.add('fa-play');
+        playBtn.classList.remove('playing');
+        playBtn.title = 'Listen to quote';
+      }
+    }
+
+    // Reset play button to initial state
+    function resetPlayButton() {
+      updatePlayButtonState(false);
+      currentUtterance = null;
+    }
+
+    // Handle page visibility changes (pause when tab becomes hidden)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isPlaying) {
+        speechSynthesis.cancel();
+        resetPlayButton();
+      }
+    });
+
+    //
+    // 4) Init: load quote, hook search, pre-load voices
+    //
+    displayDailyQuote();
+
+    // Pre-load voices and set up play button
+    document.addEventListener('DOMContentLoaded', () => {
+      waitForVoices();
+      
+      const playBtn = document.getElementById('play-button');
+      if (playBtn) {
+        playBtn.addEventListener('click', readQuoteAloud);
+      }
+    });
+
+    // Search form & input - removed since we're not using search functionality
+  </script>
 </body>
 </html>
