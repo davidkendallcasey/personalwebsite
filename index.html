@@ -9,49 +9,6 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
   >
-  <style>
-    /* Audio player button styles */
-    #play-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #444;
-      color: #e8e6e3;
-      border: none;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      margin-left: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      vertical-align: middle;
-    }
-    #play-button:hover {
-      background: #555;
-      transform: scale(1.05);
-    }
-    #play-button.playing {
-      background: #8b4c42;
-    }
-    .quote-attribution {
-      display: flex;
-      align-items: center;
-      margin-top: 10px;
-    }
-    .divider {
-      width: 20%;
-      margin: 50px auto;
-      border: none;
-      height: 0.5px;
-      background-color: #8b4c42;
-    }
-    /* Center the Daily Selection heading */
-    .daily-selection-heading {
-      text-align: center;
-      margin: 30px 0;
-    }
-  </style>
 </head>
 <body>
   <header>
@@ -202,33 +159,55 @@
     }
 
     //
-    // 2) Fixed Read‑aloud functionality
+    // 2) Text-to-speech functionality
     //
     let currentUtterance = null;
     let isPlaying = false;
 
+    // Check for speech synthesis support
+    function checkSpeechSupport() {
+      if (!('speechSynthesis' in window)) {
+        console.warn('Speech synthesis not supported in this browser');
+        return false;
+      }
+      return true;
+    }
+
     // Wait for voices to load
     function waitForVoices() {
       return new Promise((resolve) => {
-        if (speechSynthesis.getVoices().length > 0) {
-          resolve();
+        const voices = speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          resolve(voices);
         } else {
-          speechSynthesis.addEventListener('voiceschanged', resolve, { once: true });
+          const handleVoicesChanged = () => {
+            speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+            resolve(speechSynthesis.getVoices());
+          };
+          speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+          
+          // Fallback timeout
+          setTimeout(() => {
+            speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+            resolve(speechSynthesis.getVoices());
+          }, 3000);
         }
       });
     }
 
     // Get the best available voice
-    function getBestVoice() {
-      const voices = speechSynthesis.getVoices();
+    function getBestVoice(voices) {
+      if (!voices || voices.length === 0) {
+        return null;
+      }
       
       // Prefer British male voices, then any English male voices, then any English voices
       const britishMale = voices.find(v => 
-        v.lang.startsWith('en-GB') && v.name.toLowerCase().includes('male')
+        v.lang.startsWith('en-GB') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('daniel') || v.name.toLowerCase().includes('arthur'))
       );
       
       const englishMale = voices.find(v => 
-        v.lang.startsWith('en') && v.name.toLowerCase().includes('male')
+        v.lang.startsWith('en') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('mark'))
       );
       
       const anyEnglish = voices.find(v => v.lang.startsWith('en'));
@@ -236,10 +215,25 @@
       return britishMale || englishMale || anyEnglish || voices[0];
     }
 
-    // Read quote aloud with proper state management
+    // Clean text for speech
+    function cleanTextForSpeech(text) {
+      // Remove HTML tags
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = text;
+      let cleanText = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Replace common formatting with pauses
+      cleanText = cleanText.replace(/—/g, ' — '); // Em dashes
+      cleanText = cleanText.replace(/\.\.\./g, ' ... '); // Ellipses
+      cleanText = cleanText.replace(/\s+/g, ' '); // Multiple spaces
+      
+      return cleanText.trim();
+    }
+
+    // Read quote aloud
     async function readQuoteAloud() {
-      if (!('speechSynthesis' in window)) {
-        console.error('Text-to-speech not supported');
+      if (!checkSpeechSupport()) {
+        alert('Text-to-speech is not supported in your browser.');
         return;
       }
 
@@ -250,56 +244,84 @@
         return;
       }
 
-      // Wait for voices to be available
-      await waitForVoices();
+      try {
+        // Get the quote text
+        const quoteElement = document.getElementById('quote-text');
+        const sourceElement = document.getElementById('quote-source');
+        
+        if (!quoteElement || !sourceElement) {
+          console.error('Quote elements not found');
+          return;
+        }
 
-      // Get the quote text
-      const quoteText = document.getElementById('quote-text').innerText.trim();
-      const sourceText = document.getElementById('quote-source').innerText.trim();
-      const fullText = `${quoteText} ${sourceText}`;
+        const quoteText = cleanTextForSpeech(quoteElement.innerHTML);
+        const sourceText = cleanTextForSpeech(sourceElement.textContent);
+        const fullText = `${quoteText} ${sourceText}`;
 
-      // Create utterance
-      currentUtterance = new SpeechSynthesisUtterance(fullText);
-      currentUtterance.rate = 0.9; // Slightly slower for better clarity
-      currentUtterance.pitch = 1;
-      currentUtterance.volume = 1;
+        if (!fullText.trim()) {
+          console.error('No text to read');
+          return;
+        }
 
-      // Set the best voice
-      const bestVoice = getBestVoice();
-      if (bestVoice) {
-        currentUtterance.voice = bestVoice;
+        // Wait for voices to be available
+        const voices = await waitForVoices();
+
+        // Create utterance
+        currentUtterance = new SpeechSynthesisUtterance(fullText);
+        currentUtterance.rate = 0.85; // Slightly slower for better clarity
+        currentUtterance.pitch = 1;
+        currentUtterance.volume = 1;
+
+        // Set the best voice
+        const bestVoice = getBestVoice(voices);
+        if (bestVoice) {
+          currentUtterance.voice = bestVoice;
+          console.log('Using voice:', bestVoice.name);
+        }
+
+        // Set up event handlers
+        currentUtterance.onstart = () => {
+          console.log('Speech started');
+          isPlaying = true;
+          updatePlayButtonState(true);
+        };
+
+        currentUtterance.onend = () => {
+          console.log('Speech ended');
+          isPlaying = false;
+          resetPlayButton();
+        };
+
+        currentUtterance.onerror = (event) => {
+          console.error('Speech synthesis error:', event);
+          isPlaying = false;
+          resetPlayButton();
+          if (event.error === 'not-allowed') {
+            alert('Speech synthesis was blocked. Please check your browser settings and try again.');
+          }
+        };
+
+        currentUtterance.onpause = () => {
+          console.log('Speech paused');
+          isPlaying = false;
+          resetPlayButton();
+        };
+
+        // Start speaking
+        speechSynthesis.speak(currentUtterance);
+        
+      } catch (error) {
+        console.error('Error in readQuoteAloud:', error);
+        resetPlayButton();
       }
-
-      // Set up event handlers
-      currentUtterance.onstart = () => {
-        isPlaying = true;
-        updatePlayButtonState(true);
-      };
-
-      currentUtterance.onend = () => {
-        isPlaying = false;
-        resetPlayButton();
-      };
-
-      currentUtterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
-        isPlaying = false;
-        resetPlayButton();
-      };
-
-      currentUtterance.onpause = () => {
-        isPlaying = false;
-        resetPlayButton();
-      };
-
-      // Start speaking
-      speechSynthesis.speak(currentUtterance);
     }
 
     // Update play button visual state
     function updatePlayButtonState(playing) {
       const playBtn = document.getElementById('play-button');
       const playIcon = document.getElementById('play-icon');
+      
+      if (!playBtn || !playIcon) return;
       
       if (playing) {
         playIcon.classList.remove('fa-play');
@@ -318,6 +340,7 @@
     function resetPlayButton() {
       updatePlayButtonState(false);
       currentUtterance = null;
+      isPlaying = false;
     }
 
     // Handle page visibility changes (pause when tab becomes hidden)
@@ -328,18 +351,41 @@
       }
     });
 
-    //
-    // 3) Init: load quote, hook search, pre-load voices
-    //
-    displayDailyQuote();
+    // Handle beforeunload to clean up
+    window.addEventListener('beforeunload', () => {
+      if (isPlaying) {
+        speechSynthesis.cancel();
+      }
+    });
 
-    // Pre-load voices and set up play button
+    //
+    // 3) Initialize everything when DOM is loaded
+    //
     document.addEventListener('DOMContentLoaded', () => {
-      waitForVoices();
+      console.log('DOM loaded, initializing...');
       
+      // Load the daily quote
+      displayDailyQuote().catch(error => {
+        console.error('Error loading daily quote:', error);
+      });
+      
+      // Set up play button
       const playBtn = document.getElementById('play-button');
       if (playBtn) {
-        playBtn.addEventListener('click', readQuoteAloud);
+        playBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          readQuoteAloud();
+        });
+        console.log('Play button event listener attached');
+      } else {
+        console.error('Play button not found');
+      }
+      
+      // Pre-load voices
+      if (checkSpeechSupport()) {
+        waitForVoices().then(voices => {
+          console.log('Voices loaded:', voices.length);
+        });
       }
     });
   </script>
