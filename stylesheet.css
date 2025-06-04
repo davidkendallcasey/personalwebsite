@@ -79,11 +79,28 @@ h2 {
 }
 
 blockquote {
-    font-size: 1.3em; /* Increased from 0.875em */
-    line-height: 1.8;
+    font-size: 0.875em;
+    line-height: 1.4;
     margin: 0 0 1rem 0;
     padding: 0;
     color: #e8e6e3;
+}
+
+/* Style paragraphs within blockquotes */
+blockquote p {
+    font-size: inherit; /* Same size as blockquote */
+    line-height: inherit; /* Same line height as blockquote */
+    margin: 0 0 1em 0; /* Space between paragraphs */
+}
+
+/* Remove margin from the last paragraph to avoid extra space */
+blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* For poetry or special formatting with line breaks */
+blockquote p br {
+    line-height: inherit; /* Maintain consistent line spacing */
 }
 
 .source {
