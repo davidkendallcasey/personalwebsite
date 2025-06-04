@@ -284,11 +284,13 @@ hr.divider {
 /* Daily Quote Styles */
 #quote-of-the-day {
     margin-bottom: 2rem;
+	font-size: 1.1em;
+	line-height: 1.4;
 }
 
 #quote-header {
     color: #b8b5b2;
-    font-size: 1.05em; /* Increased from 0.95rem */
+    font-size: 1.2em; /* Increased from 0.95rem */
     margin-bottom: 1rem;
 }
 
@@ -306,6 +308,7 @@ hr.divider {
     display: flex;
     align-items: center;
     margin-top: 10px;
+	font-style: italic;
 }
 
 #play-button {
