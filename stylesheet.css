@@ -108,10 +108,12 @@ blockquote p br {
     font-size: 1.1em; /* Increased from 0.875em */
     color: #b8b5b2; /* Muted color for attribution */
     margin-top: 1rem;
+	line-height: 1.2;
 }
 
 .work-title {
     font-style: italic;
+	line-height: 1.2;
 }
 
 /* Ensure work titles are italicized in all contexts */
