@@ -2,7 +2,7 @@
 /* General Styles */
 body {
     font-family: Neuton, Georgia, sans-serif, monospace;
-    line-height: 1.6;
+    line-height: 1.0;
     margin: 0;
     padding: 0;
     background-color: #1a1a1a; /* Softer than pure black */
@@ -33,7 +33,7 @@ header h1 {
 
 p {
 	font-size: 1.3em; /* Increased from 0.875em */
-	line-height: 1.5;
+	line-height: 1.0;
 }
 
 /* Navigation */
@@ -85,7 +85,7 @@ h2 {
 
 blockquote {
     font-size: 1.3em; /* Increased from 0.875em */
-    line-height: 1.5;
+    line-height: 1.0;
     margin: 0 0 1rem 0;
     padding: 0;
     color: #e8e6e3;
