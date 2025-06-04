@@ -219,158 +219,186 @@
     }
 
     // Chrome-optimized voice selection
-    function getBestVoiceForChrome() {
-      const voices = speechSynthesis.getVoices();
-      
-      // For Chrome, prefer Microsoft voices over Google voices
-      // Microsoft voices often have better audio routing
-      const microsoftVoices = voices.filter(v => v.name.includes('Microsoft'));
-      const googleVoices = voices.filter(v => v.name.includes('Google'));
-      
-      // Try Microsoft voices first
-      if (microsoftVoices.length > 0) {
-        const englishMicrosoft = microsoftVoices.find(v => v.lang.startsWith('en'));
-        if (englishMicrosoft) {
-          console.log('Using Microsoft voice for Chrome:', englishMicrosoft.name);
-          return englishMicrosoft;
-        }
-      }
-      
-      // Fall back to Google voices
-      if (googleVoices.length > 0) {
-        const englishGoogle = googleVoices.find(v => v.lang.startsWith('en'));
-        if (englishGoogle) {
-          console.log('Using Google voice for Chrome:', englishGoogle.name);
-          return englishGoogle;
-        }
-      }
-      
-      // Last resort: any English voice
-      const anyEnglish = voices.find(v => v.lang.startsWith('en'));
-      return anyEnglish || voices[0];
-    }
+		function getBestVoiceForChrome() {
+	  const voices = speechSynthesis.getVoices();
+	  console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+	  
+	  // Priority order for most natural-sounding voices
+	  const voicePriorities = [
+		// High-quality Microsoft voices (most natural)
+		{ name: 'Microsoft Zira', lang: 'en-US' },
+		{ name: 'Microsoft David', lang: 'en-US' },
+		{ name: 'Microsoft Mark', lang: 'en-US' },
+		{ name: 'Microsoft Hazel', lang: 'en-GB' },
+		{ name: 'Microsoft Susan', lang: 'en-GB' },
+		{ name: 'Microsoft George', lang: 'en-GB' },
+		
+		// Google voices (decent quality)
+		{ name: 'Google UK English Male', lang: 'en-GB' },
+		{ name: 'Google UK English Female', lang: 'en-GB' },
+		{ name: 'Google US English', lang: 'en-US' },
+		
+		// Fallback to any decent English voice
+		{ pattern: /english/i, lang: 'en' },
+		{ pattern: /david|zira|mark|hazel|susan|george/i, lang: 'en' }
+	  ];
+	  
+	  // Try each priority voice in order
+	  for (const priority of voicePriorities) {
+		let voice;
+		
+		if (priority.name) {
+		  // Look for exact name match
+		  voice = voices.find(v => 
+			v.name.includes(priority.name) && 
+			v.lang.startsWith(priority.lang.split('-')[0])
+		  );
+		} else if (priority.pattern) {
+		  // Look for pattern match
+		  voice = voices.find(v => 
+			priority.pattern.test(v.name) && 
+			v.lang.startsWith(priority.lang.split('-')[0])
+		  );
+		}
+		
+		if (voice) {
+		  console.log(`🎤 Selected high-quality voice: ${voice.name} (${voice.lang})`);
+		  return voice;
+		}
+	  }
+	  
+	  // Last resort: any English voice that's not obviously robotic
+	  const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+	  const nonRoboticVoice = englishVoices.find(v => 
+		!v.name.toLowerCase().includes('robot') &&
+		!v.name.toLowerCase().includes('android') &&
+		!v.name.toLowerCase().includes('espeak')
+	  );
+	  
+	  if (nonRoboticVoice) {
+		console.log(`🎤 Using fallback voice: ${nonRoboticVoice.name}`);
+		return nonRoboticVoice;
+	  }
+	  
+	  // Absolute last resort
+	  console.warn('⚠️ Only robotic voices available');
+	  return englishVoices[0] || voices[0];
+	}
 
-    // Chrome-optimized read quote function
-    async function readQuoteAloud() {
-      console.log('readQuoteAloud called (Chrome optimized)');
-      
-      if (!('speechSynthesis' in window)) {
-        console.error('Speech synthesis not supported');
-        alert('Speech synthesis is not supported in your browser');
-        return;
-      }
+	// Also update your speech function to use better speech settings
+	async function readQuoteAloudWithBetterVoice() {
+	  console.log('readQuoteAloud called (with better voice selection)');
+	  
+	  if (!('speechSynthesis' in window)) {
+		console.error('Speech synthesis not supported');
+		alert('Speech synthesis is not supported in your browser');
+		return;
+	  }
 
-      // If currently playing, stop
-      if (isPlaying) {
-        console.log('Stopping current speech');
-        speechSynthesis.cancel();
-        resetPlayButton();
-        return;
-      }
+	  // If currently playing, stop
+	  if (isPlaying) {
+		console.log('Stopping current speech');
+		speechSynthesis.cancel();
+		resetPlayButton();
+		return;
+	  }
 
-      // Stop any current speech and wait for Chrome cleanup
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
+	  // Stop any current speech and wait for Chrome cleanup
+	  if (speechSynthesis.speaking) {
+		speechSynthesis.cancel();
+		await new Promise(resolve => setTimeout(resolve, 200)); // Longer wait for better cleanup
+	  }
 
-      // Force audio context resume (Chrome fix)
-      try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        await audioContext.resume();
-        console.log('Audio context resumed for Chrome');
-      } catch (e) {
-        console.log('Could not create audio context:', e);
-      }
+	  // Force audio context resume (Chrome fix)
+	  try {
+		const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+		await audioContext.resume();
+		console.log('Audio context resumed for Chrome');
+	  } catch (e) {
+		console.log('Could not create audio context:', e);
+	  }
 
-      // Wait for voices to be available
-      console.log('Waiting for voices...');
-      await waitForVoices();
+	  // Wait for voices to be available
+	  console.log('Waiting for voices...');
+	  await waitForVoices();
 
-      // Get the quote text
-      const quoteText = document.getElementById('quote-text').innerText.trim();
-      const sourceText = document.getElementById('quote-source').innerText.trim();
-      const fullText = `${quoteText} ${sourceText}`;
+	  // Get the quote text
+	  const quoteText = document.getElementById('quote-text').innerText.trim();
+	  const sourceText = document.getElementById('quote-source').innerText.trim();
+	  const fullText = `${quoteText} ${sourceText}`;
 
-      console.log(`Speaking text: "${fullText.substring(0, 50)}..."`);
+	  console.log(`Speaking text: "${fullText.substring(0, 50)}..."`);
 
-      // Create utterance with Chrome-specific settings
-      currentUtterance = new SpeechSynthesisUtterance(fullText);
-      currentUtterance.rate = 0.8; // Slower rate can help with Chrome audio issues
-      currentUtterance.pitch = 1;
-      currentUtterance.volume = 1; // Maximum volume
+	  // Create utterance with better settings for natural speech
+	  currentUtterance = new SpeechSynthesisUtterance(fullText);
+	  currentUtterance.rate = 0.85; // Slightly slower for better clarity
+	  currentUtterance.pitch = 1.0; // Natural pitch
+	  currentUtterance.volume = 1.0; // Maximum volume
 
-      // Use Chrome-optimized voice selection
-      const voice = getBestVoiceForChrome();
-      if (voice) {
-        currentUtterance.voice = voice;
-        console.log('Selected voice:', voice.name);
-      }
+	  // Use improved voice selection
+	  const voice = getBestVoiceForChrome();
+	  if (voice) {
+		currentUtterance.voice = voice;
+		console.log(`🎤 Selected voice: ${voice.name} (${voice.lang})`);
+	  } else {
+		console.warn('⚠️ No suitable voice found, using default');
+	  }
 
-      // Set up event handlers
-      currentUtterance.onstart = () => {
-        console.log('Chrome speech started');
-        isPlaying = true;
-        updatePlayButtonState(true);
-      };
+	  // Set up event handlers
+	  currentUtterance.onstart = () => {
+		console.log('🔊 Natural speech started');
+		isPlaying = true;
+		updatePlayButtonState(true);
+	  };
 
-      currentUtterance.onend = () => {
-        console.log('Chrome speech ended');
-        isPlaying = false;
-        resetPlayButton();
-      };
+	  currentUtterance.onend = () => {
+		console.log('✅ Natural speech ended');
+		isPlaying = false;
+		resetPlayButton();
+	  };
 
-      currentUtterance.onerror = (event) => {
-        console.error('Chrome speech error:', event.error, event.message);
-        isPlaying = false;
-        resetPlayButton();
-        
-        if (event.error === 'audio-hardware') {
-          alert('Audio hardware error. Try:\n1. Check Windows volume mixer\n2. Restart Chrome\n3. Try incognito mode');
-        } else if (event.error === 'not-allowed') {
-          alert('Speech blocked. Click the lock icon next to the URL and ensure "Sound" is allowed.');
-        } else {
-          alert(`Speech error: ${event.error}. Try refreshing the page or using incognito mode.`);
-        }
-      };
+	  currentUtterance.onerror = (event) => {
+		console.error('❌ Speech error:', event.error, event.message);
+		isPlaying = false;
+		resetPlayButton();
+		
+		if (event.error === 'audio-hardware') {
+		  alert('Audio hardware error. Try:\n1. Check Windows volume mixer\n2. Restart Chrome\n3. Try incognito mode');
+		} else if (event.error === 'not-allowed') {
+		  alert('Speech blocked. Click the lock icon next to the URL and ensure "Sound" is allowed.');
+		} else {
+		  alert(`Speech error: ${event.error}. Try refreshing the page.`);
+		}
+	  };
 
-      currentUtterance.onpause = () => {
-        console.log('Chrome speech paused');
-        isPlaying = false;
-        resetPlayButton();
-      };
+	  currentUtterance.onpause = () => {
+		console.log('⏸️ Speech paused');
+		isPlaying = false;
+		resetPlayButton();
+	  };
 
-      // Chrome-specific: Force resume if paused
-      if (speechSynthesis.paused) {
-        speechSynthesis.resume();
-        console.log('Resumed paused synthesis');
-      }
+	  // Chrome-specific: Force resume if paused
+	  if (speechSynthesis.paused) {
+		speechSynthesis.resume();
+		console.log('▶️ Resumed paused synthesis');
+	  }
 
-      // Start speaking
-      console.log('Starting Chrome speech synthesis...');
-      speechSynthesis.speak(currentUtterance);
-      
-      // Chrome-specific monitoring and fallback
-      setTimeout(() => {
-        console.log(`Speech state check - speaking: ${speechSynthesis.speaking}, pending: ${speechSynthesis.pending}`);
-        
-        if (!speechSynthesis.speaking && speechSynthesis.pending) {
-          console.warn('Speech is pending but not speaking in Chrome, trying to resume');
-          if (speechSynthesis.paused) {
-            speechSynthesis.resume();
-          }
-        }
-      }, 200);
-
-      // Additional Chrome fallback - try default voice if custom voice fails
-      setTimeout(() => {
-        if (!speechSynthesis.speaking && !isPlaying) {
-          console.warn('Speech did not start in Chrome, trying with default voice');
-          currentUtterance.voice = null; // Use default voice
-          speechSynthesis.speak(currentUtterance);
-        }
-      }, 500);
-    }
+	  // Start speaking
+	  console.log('🎙️ Starting natural speech synthesis...');
+	  speechSynthesis.speak(currentUtterance);
+	  
+	  // Monitor and provide fallback
+	  setTimeout(() => {
+		console.log(`🔍 Speech state - speaking: ${speechSynthesis.speaking}, pending: ${speechSynthesis.pending}`);
+		
+		if (!speechSynthesis.speaking && speechSynthesis.pending) {
+		  console.warn('⚠️ Speech pending but not playing, attempting resume');
+		  if (speechSynthesis.paused) {
+			speechSynthesis.resume();
+		  }
+		}
+	  }, 300);
+	}
 
     // Update play button visual state
     function updatePlayButtonState(playing) {
