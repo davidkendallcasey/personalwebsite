@@ -7,7 +7,7 @@ body {
     padding: 0;
     background-color: #1a1a1a; /* Softer than pure black */
     color: #e8e6e3; /* Warm off-white instead of stark white */
-	font-size: 100%;
+	font-size: 120%;
 }
 
 /* Header Styles */
@@ -79,7 +79,7 @@ h2 {
 }
 
 blockquote {
-    font-size: 0.875em;
+    font-size: 1.1em;
     line-height: 1.4;
     margin: 0 0 1rem 0;
     padding: 0;
