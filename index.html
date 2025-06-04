@@ -9,6 +9,49 @@
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
   >
+  <style>
+    /* Audio player button styles */
+    #play-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #444;
+      color: #e8e6e3;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      margin-left: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      vertical-align: middle;
+    }
+    #play-button:hover {
+      background: #555;
+      transform: scale(1.05);
+    }
+    #play-button.playing {
+      background: #8b4c42;
+    }
+    .quote-attribution {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .divider {
+      width: 20%;
+      margin: 50px auto;
+      border: none;
+      height: 0.5px;
+      background-color: #8b4c42;
+    }
+    /* Center the Daily Selection heading */
+    .daily-selection-heading {
+      text-align: center;
+      margin: 30px 0;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -159,169 +202,180 @@
     }
 
     //
-    // 2) Text-to-speech functionality
+    // 2) CHROME-OPTIMIZED Speech Synthesis
     //
     let currentUtterance = null;
     let isPlaying = false;
 
-    // Check for speech synthesis support
-    function checkSpeechSupport() {
-      if (!('speechSynthesis' in window)) {
-        console.warn('Speech synthesis not supported in this browser');
-        return false;
-      }
-      return true;
-    }
-
     // Wait for voices to load
     function waitForVoices() {
       return new Promise((resolve) => {
-        const voices = speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          resolve(voices);
+        if (speechSynthesis.getVoices().length > 0) {
+          resolve();
         } else {
-          const handleVoicesChanged = () => {
-            speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
-            resolve(speechSynthesis.getVoices());
-          };
-          speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
-          
-          // Fallback timeout
-          setTimeout(() => {
-            speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
-            resolve(speechSynthesis.getVoices());
-          }, 3000);
+          speechSynthesis.addEventListener('voiceschanged', resolve, { once: true });
         }
       });
     }
 
-    // Get the best available voice
-    function getBestVoice(voices) {
-      if (!voices || voices.length === 0) {
-        return null;
+    // Chrome-optimized voice selection
+    function getBestVoiceForChrome() {
+      const voices = speechSynthesis.getVoices();
+      
+      // For Chrome, prefer Microsoft voices over Google voices
+      // Microsoft voices often have better audio routing
+      const microsoftVoices = voices.filter(v => v.name.includes('Microsoft'));
+      const googleVoices = voices.filter(v => v.name.includes('Google'));
+      
+      // Try Microsoft voices first
+      if (microsoftVoices.length > 0) {
+        const englishMicrosoft = microsoftVoices.find(v => v.lang.startsWith('en'));
+        if (englishMicrosoft) {
+          console.log('Using Microsoft voice for Chrome:', englishMicrosoft.name);
+          return englishMicrosoft;
+        }
       }
       
-      // Prefer British male voices, then any English male voices, then any English voices
-      const britishMale = voices.find(v => 
-        v.lang.startsWith('en-GB') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('daniel') || v.name.toLowerCase().includes('arthur'))
-      );
+      // Fall back to Google voices
+      if (googleVoices.length > 0) {
+        const englishGoogle = googleVoices.find(v => v.lang.startsWith('en'));
+        if (englishGoogle) {
+          console.log('Using Google voice for Chrome:', englishGoogle.name);
+          return englishGoogle;
+        }
+      }
       
-      const englishMale = voices.find(v => 
-        v.lang.startsWith('en') && (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('mark'))
-      );
-      
+      // Last resort: any English voice
       const anyEnglish = voices.find(v => v.lang.startsWith('en'));
-      
-      return britishMale || englishMale || anyEnglish || voices[0];
+      return anyEnglish || voices[0];
     }
 
-    // Clean text for speech
-    function cleanTextForSpeech(text) {
-      // Remove HTML tags
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = text;
-      let cleanText = tempDiv.textContent || tempDiv.innerText || '';
-      
-      // Replace common formatting with pauses
-      cleanText = cleanText.replace(/—/g, ' — '); // Em dashes
-      cleanText = cleanText.replace(/\.\.\./g, ' ... '); // Ellipses
-      cleanText = cleanText.replace(/\s+/g, ' '); // Multiple spaces
-      
-      return cleanText.trim();
-    }
-
-    // Read quote aloud
+    // Chrome-optimized read quote function
     async function readQuoteAloud() {
-      if (!checkSpeechSupport()) {
-        alert('Text-to-speech is not supported in your browser.');
+      console.log('readQuoteAloud called (Chrome optimized)');
+      
+      if (!('speechSynthesis' in window)) {
+        console.error('Speech synthesis not supported');
+        alert('Speech synthesis is not supported in your browser');
         return;
       }
 
       // If currently playing, stop
       if (isPlaying) {
+        console.log('Stopping current speech');
         speechSynthesis.cancel();
         resetPlayButton();
         return;
       }
 
-      try {
-        // Get the quote text
-        const quoteElement = document.getElementById('quote-text');
-        const sourceElement = document.getElementById('quote-source');
-        
-        if (!quoteElement || !sourceElement) {
-          console.error('Quote elements not found');
-          return;
-        }
-
-        const quoteText = cleanTextForSpeech(quoteElement.innerHTML);
-        const sourceText = cleanTextForSpeech(sourceElement.textContent);
-        const fullText = `${quoteText} ${sourceText}`;
-
-        if (!fullText.trim()) {
-          console.error('No text to read');
-          return;
-        }
-
-        // Wait for voices to be available
-        const voices = await waitForVoices();
-
-        // Create utterance
-        currentUtterance = new SpeechSynthesisUtterance(fullText);
-        currentUtterance.rate = 0.85; // Slightly slower for better clarity
-        currentUtterance.pitch = 1;
-        currentUtterance.volume = 1;
-
-        // Set the best voice
-        const bestVoice = getBestVoice(voices);
-        if (bestVoice) {
-          currentUtterance.voice = bestVoice;
-          console.log('Using voice:', bestVoice.name);
-        }
-
-        // Set up event handlers
-        currentUtterance.onstart = () => {
-          console.log('Speech started');
-          isPlaying = true;
-          updatePlayButtonState(true);
-        };
-
-        currentUtterance.onend = () => {
-          console.log('Speech ended');
-          isPlaying = false;
-          resetPlayButton();
-        };
-
-        currentUtterance.onerror = (event) => {
-          console.error('Speech synthesis error:', event);
-          isPlaying = false;
-          resetPlayButton();
-          if (event.error === 'not-allowed') {
-            alert('Speech synthesis was blocked. Please check your browser settings and try again.');
-          }
-        };
-
-        currentUtterance.onpause = () => {
-          console.log('Speech paused');
-          isPlaying = false;
-          resetPlayButton();
-        };
-
-        // Start speaking
-        speechSynthesis.speak(currentUtterance);
-        
-      } catch (error) {
-        console.error('Error in readQuoteAloud:', error);
-        resetPlayButton();
+      // Stop any current speech and wait for Chrome cleanup
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
+
+      // Force audio context resume (Chrome fix)
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        await audioContext.resume();
+        console.log('Audio context resumed for Chrome');
+      } catch (e) {
+        console.log('Could not create audio context:', e);
+      }
+
+      // Wait for voices to be available
+      console.log('Waiting for voices...');
+      await waitForVoices();
+
+      // Get the quote text
+      const quoteText = document.getElementById('quote-text').innerText.trim();
+      const sourceText = document.getElementById('quote-source').innerText.trim();
+      const fullText = `${quoteText} ${sourceText}`;
+
+      console.log(`Speaking text: "${fullText.substring(0, 50)}..."`);
+
+      // Create utterance with Chrome-specific settings
+      currentUtterance = new SpeechSynthesisUtterance(fullText);
+      currentUtterance.rate = 0.8; // Slower rate can help with Chrome audio issues
+      currentUtterance.pitch = 1;
+      currentUtterance.volume = 1; // Maximum volume
+
+      // Use Chrome-optimized voice selection
+      const voice = getBestVoiceForChrome();
+      if (voice) {
+        currentUtterance.voice = voice;
+        console.log('Selected voice:', voice.name);
+      }
+
+      // Set up event handlers
+      currentUtterance.onstart = () => {
+        console.log('Chrome speech started');
+        isPlaying = true;
+        updatePlayButtonState(true);
+      };
+
+      currentUtterance.onend = () => {
+        console.log('Chrome speech ended');
+        isPlaying = false;
+        resetPlayButton();
+      };
+
+      currentUtterance.onerror = (event) => {
+        console.error('Chrome speech error:', event.error, event.message);
+        isPlaying = false;
+        resetPlayButton();
+        
+        if (event.error === 'audio-hardware') {
+          alert('Audio hardware error. Try:\n1. Check Windows volume mixer\n2. Restart Chrome\n3. Try incognito mode');
+        } else if (event.error === 'not-allowed') {
+          alert('Speech blocked. Click the lock icon next to the URL and ensure "Sound" is allowed.');
+        } else {
+          alert(`Speech error: ${event.error}. Try refreshing the page or using incognito mode.`);
+        }
+      };
+
+      currentUtterance.onpause = () => {
+        console.log('Chrome speech paused');
+        isPlaying = false;
+        resetPlayButton();
+      };
+
+      // Chrome-specific: Force resume if paused
+      if (speechSynthesis.paused) {
+        speechSynthesis.resume();
+        console.log('Resumed paused synthesis');
+      }
+
+      // Start speaking
+      console.log('Starting Chrome speech synthesis...');
+      speechSynthesis.speak(currentUtterance);
+      
+      // Chrome-specific monitoring and fallback
+      setTimeout(() => {
+        console.log(`Speech state check - speaking: ${speechSynthesis.speaking}, pending: ${speechSynthesis.pending}`);
+        
+        if (!speechSynthesis.speaking && speechSynthesis.pending) {
+          console.warn('Speech is pending but not speaking in Chrome, trying to resume');
+          if (speechSynthesis.paused) {
+            speechSynthesis.resume();
+          }
+        }
+      }, 200);
+
+      // Additional Chrome fallback - try default voice if custom voice fails
+      setTimeout(() => {
+        if (!speechSynthesis.speaking && !isPlaying) {
+          console.warn('Speech did not start in Chrome, trying with default voice');
+          currentUtterance.voice = null; // Use default voice
+          speechSynthesis.speak(currentUtterance);
+        }
+      }, 500);
     }
 
     // Update play button visual state
     function updatePlayButtonState(playing) {
       const playBtn = document.getElementById('play-button');
       const playIcon = document.getElementById('play-icon');
-      
-      if (!playBtn || !playIcon) return;
       
       if (playing) {
         playIcon.classList.remove('fa-play');
@@ -340,7 +394,6 @@
     function resetPlayButton() {
       updatePlayButtonState(false);
       currentUtterance = null;
-      isPlaying = false;
     }
 
     // Handle page visibility changes (pause when tab becomes hidden)
@@ -351,41 +404,19 @@
       }
     });
 
-    // Handle beforeunload to clean up
-    window.addEventListener('beforeunload', () => {
-      if (isPlaying) {
-        speechSynthesis.cancel();
-      }
-    });
+    //
+    // 3) Init: load quote, hook search, pre-load voices
+    //
+    displayDailyQuote();
 
-    //
-    // 3) Initialize everything when DOM is loaded
-    //
+    // Pre-load voices and set up play button
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('DOM loaded, initializing...');
+      console.log('Chrome-optimized speech synthesis ready');
+      waitForVoices();
       
-      // Load the daily quote
-      displayDailyQuote().catch(error => {
-        console.error('Error loading daily quote:', error);
-      });
-      
-      // Set up play button
       const playBtn = document.getElementById('play-button');
       if (playBtn) {
-        playBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          readQuoteAloud();
-        });
-        console.log('Play button event listener attached');
-      } else {
-        console.error('Play button not found');
-      }
-      
-      // Pre-load voices
-      if (checkSpeechSupport()) {
-        waitForVoices().then(voices => {
-          console.log('Voices loaded:', voices.length);
-        });
+        playBtn.addEventListener('click', readQuoteAloud);
       }
     });
   </script>
