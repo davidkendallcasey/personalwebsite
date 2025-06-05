@@ -103,8 +103,10 @@ blockquote p br {
     line-height: inherit; /* Maintain consistent line spacing */
 }
 
-blockquote blockquote {
-    font-size: 1em; /* Reset to same size as parent blockquote */
+blockquote blockquote { 
+    font-size: 1em; /* Maintain consistent font size for nested block quotes */
+    border-left: 4px solid #b8816f;
+    margin-left: 1rem;
 }
 
 .source {
