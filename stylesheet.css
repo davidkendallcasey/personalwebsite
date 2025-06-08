@@ -171,6 +171,15 @@ hr.divider {
     padding-left: 0.75rem;
 }
 
+.commentary-section {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background-color: #1f1f1f; /* Slightly different from quote background */
+    border-radius: 8px;
+    border-left: 4px solid #6a5d5d; /* Different accent color */
+    font-style: italic;
+}
+
 /* Search Styles */
 .search-container {
     margin-top: 1.5rem;
