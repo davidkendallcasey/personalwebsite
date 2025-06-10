@@ -19,14 +19,14 @@ header {
 
 header h1 {
 	font-style: italic;
-	font-size: 2.8em; /* Increased from 2.5em */
+	font-size: 2.9.0em;
     margin: 0;
     color: #f5f3f0; /* Slightly warmer white for headings */
     letter-spacing: 1px;
 }
 
 .subtitle {
-    font-size: 2.0em; /* Increased from 1.875em */
+    font-size: 2.1em;
     color: #b8b5b2; /* Muted color for subtitle */
     margin: 0.5rem 0 0 0;
 }
@@ -46,7 +46,7 @@ nav a {
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: all 0.3s ease;
-    font-size: 1.3em; /* Added explicit size for nav links */
+    font-size: 1.4em; /* Added explicit size for nav links */
 }
 
 nav a:hover {
@@ -66,7 +66,7 @@ h2 {
     border-bottom: 2px solid #8b4c42; /* Darker, more muted red */
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
-    font-size: 1.8em; /* Added explicit size for h2 */
+    font-size: 1.9em; /* Added explicit size for h2 */
 }
 
 /* Quote Styles */
@@ -79,7 +79,7 @@ h2 {
 }
 
 blockquote {
-    font-size: 1.1em;
+    font-size: 1.2em;
     line-height: 1.4;
     margin: 0 0 1rem 0;
     padding: 0;
@@ -104,14 +104,14 @@ blockquote p br {
 }
 
 blockquote blockquote { 
-    font-size: 1em; /* Maintain consistent font size for nested block quotes */
+    font-size: 1.0em; /* Maintain consistent font size for nested block quotes */
     border-left: 4px solid #b8816f;
     margin-left: 1rem;
 }
 
 .source {
     text-align: right;
-    font-size: 1.1em; /* Increased from 0.875em */
+    font-size: 1.2em;
     color: #b8b5b2; /* Muted color for attribution */
     margin-top: 1rem;
 	line-height: 1.2;
@@ -161,7 +161,7 @@ hr.divider {
     border-radius: 4px;
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
-    font-size: 1.3em; /* Added explicit size */
+    font-size: 1.4em; /* Added explicit size */
 }
 
 .category-link:hover {
@@ -276,7 +276,7 @@ hr.divider {
     text-decoration: none;
     margin: 0 0.5rem;
     transition: color 0.3s ease;
-    font-size: 1.3em; /* Added explicit size */
+    font-size: 1.4em; /* Added explicit size */
 }
 
 .navigation-links a:hover {
@@ -291,7 +291,7 @@ hr.divider {
     color: #d4d1ce;
     text-decoration: none;
     transition: color 0.3s ease;
-    font-size: 1.1em; /* Added explicit size */
+    font-size: 1.2em; /* Added explicit size */
 }
 
 .back-to-commonplace a:hover {
@@ -301,13 +301,13 @@ hr.divider {
 /* Daily Quote Styles */
 #quote-of-the-day {
     margin-bottom: 2rem;
-	font-size: 1.1em;
+	font-size: 1.2em;
 	line-height: 1.4;
 }
 
 #quote-header {
     color: #b8b5b2;
-    font-size: 1.2em; /* Increased from 0.95rem */
+    font-size: 1.1em; /* Increased from 0.95rem */
     margin-bottom: 1rem;
 }
 
@@ -374,7 +374,7 @@ hr.divider {
     }
     
     header h1 {
-        font-size: 2.2em; /* Increased from 2rem */
+        font-size: 2.3em; /* Increased from 2rem */
     }
     
     .search-container {
@@ -387,6 +387,6 @@ hr.divider {
     }
     
     blockquote {
-        font-size: 1.3em;
+        font-size: 1.4em;
     }
 }
