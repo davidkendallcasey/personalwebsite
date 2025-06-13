@@ -105,7 +105,7 @@ blockquote p br {
 
 blockquote blockquote { 
     font-size: 1.0em; /* Maintain consistent font size for nested block quotes */
-    border-left: 4px solid #b8816f;
+    border-left: 4px solid #6b3426; /* Darker border than main blockquotes */
     margin-left: 1rem;
     padding-left: 1rem; /* Add this line to offset from the border */
 }
