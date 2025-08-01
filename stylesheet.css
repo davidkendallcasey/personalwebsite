@@ -179,7 +179,8 @@ hr.divider {
     border-radius: 8px;
     border-left: 4px solid #6a5d5d; /* Different accent color */
     font-style: italic;
-    font-size: 1.25em; /* Increased from 1.15em */
+    font-size: 1.35em; /* Same as blockquote text */
+    line-height: 1.5; /* Same as blockquote line-height */
 }
 
 /* Search Styles */
