@@ -1,0 +1,20 @@
+{
+  "name": "commonplace-book",
+  "version": "1.0.0",
+  "description": "David Kendall Casey's Commonplace Book - A collection of quotes and passages",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "create-index": "node create-index.js"
+  },
+  "keywords": [
+    "quotes",
+    "commonplace",
+    "book"
+  ],
+  "author": "David Kendall Casey",
+  "license": "ISC",
+  "dependencies": {
+    "jsdom": "^24.1.3"
+  }
+}
