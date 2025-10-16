@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Neuton:ital,wght@0,200;0,300;0,400;0,700;0,800;1,400&display=swap');
 /* General Styles */
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: Neuton, Georgia, sans-serif, monospace;
     line-height: 1.8;
@@ -76,6 +80,23 @@ h2 {
     background-color: #242424; /* Subtle background for quotes */
     border-radius: 8px;
     border-left: 4px solid #8b4c42; /* Matching muted red accent */
+    transition: background-color 0.5s ease, border-left-color 0.5s ease;
+}
+
+/* Highlight targeted quote from search results */
+.quote-entry:target {
+    background-color: #2a2520;
+    border-left-color: #b8654a;
+    animation: highlight-pulse 1.5s ease-out;
+}
+
+@keyframes highlight-pulse {
+    0%, 100% {
+        background-color: #2a2520;
+    }
+    50% {
+        background-color: #3a3025;
+    }
 }
 
 blockquote {

@@ -83,7 +83,7 @@ class DynamicSearch {
                     const fullText = `${quoteText} ${sourceText}`.toLowerCase();
                     
                     const searchEntry = {
-                        url: pageUrl,
+                        url: `${pageUrl}#quote-${index}`,
                         pageTitle: pageTitle,
                         quoteText: quoteText,
                         sourceText: sourceText,
@@ -277,7 +277,7 @@ class DynamicSearch {
         }
 
         const resultsHTML = results.map(result => `
-            <div class="result-item" onclick="window.open('${result.url}', '_blank')">
+            <div class="result-item" onclick="window.location.href='${result.url}'">
                 <div class="result-title">${result.pageTitle}</div>
                 <div class="result-preview">${result.highlightedQuote}</div>
                 ${result.highlightedSource ? `<div class="result-source">— ${result.highlightedSource}</div>` : ''}

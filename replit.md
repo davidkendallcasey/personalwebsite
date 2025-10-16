@@ -63,7 +63,10 @@ This is a static website that serves as a digital commonplace book - a collectio
 - Available on all pages via dynamic search bar
 - Automatically discovers new pages from the index
 - Real-time search with highlighted results
+- **Direct quote linking**: Click a search result and jump straight to that specific quote on the page
+- Smooth scroll animation and visual highlight when landing on a quote
 - Keyboard shortcuts: "/" to search, "Escape" to close
+- Auto-generated IDs for all quotes (no manual work needed)
 
 ### Text-to-Speech
 - Prioritizes British/UK English male voices
