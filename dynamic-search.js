@@ -3,23 +3,28 @@ class DynamicSearch {
     constructor() {
         this.searchIndex = [];
         this.isIndexed = false;
-        this.knownPages = [
-            'on-age.html', 'on-animals.html', 'on-art-and-creativity.html',
-            'on-beauty.html', 'on-benevolence.html', 'on-crime-and-punishment.html',
-            'on-culture-and-politics.html', 'on-death.html', 'on-education.html',
-            'on-existence.html', 'on-freedom.html', 'on-friendship.html',
-            'on-greatness.html', 'on-hate.html', 'on-health-illness-medicine.html',
-            'on-history.html', 'on-hope.html', 'on-introversion.html',
-            'on-joy.html', 'on-justice-and-mercy.html', 'on-language.html',
-            'on-love.html', 'on-manners.html', 'on-mind.html',
-            'on-money-and-wealth.html', 'on-morality.html', 'on-the-past.html',
-            'on-philosophy.html', 'on-purpose.html', 'on-race-and-racism.html',
-            'on-reading.html', 'on-the-sublime.html', 'on-suffering.html',
-            'on-technology.html', 'on-truth-and-knowledge.html',
-            'on-war-and-violence.html', 'on-work.html', 'on-writing.html'
-        ];
+        this.knownPages = [];
         this.cache = new Map();
         this.setupSearch();
+    }
+
+    async discoverPages() {
+        try {
+            const response = await fetch('commonplace.html');
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            
+            const links = doc.querySelectorAll('.category-link');
+            const pages = Array.from(links)
+                .map(link => link.getAttribute('href'))
+                .filter(href => href && href.endsWith('.html') && href.startsWith('on-'));
+            
+            console.log('Discovered pages for search:', pages);
+            return pages;
+        } catch (error) {
+            console.error('Could not discover pages from commonplace.html:', error);
+            return [];
+        }
     }
 
     async buildIndex() {
@@ -27,6 +32,10 @@ class DynamicSearch {
         
         console.log('Building search index...');
         this.searchIndex = [];
+        
+        if (this.knownPages.length === 0) {
+            this.knownPages = await this.discoverPages();
+        }
         
         for (const page of this.knownPages) {
             try {
