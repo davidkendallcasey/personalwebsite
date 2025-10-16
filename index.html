@@ -234,7 +234,61 @@
          </a>`;
     }
 
-    // SUPER SIMPLE speech function
+    // Voice selection - prefer British male voices
+    let selectedVoice = null;
+    let voicesLoaded = false;
+
+    function loadVoices() {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length === 0) return null;
+      
+      // Priority 1: British/UK English male voices
+      let voice = voices.find(v => 
+        (v.lang.includes('en-GB') || v.lang.includes('en-UK')) && 
+        (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('daniel') || 
+         v.name.toLowerCase().includes('george') || v.name.toLowerCase().includes('oliver'))
+      );
+      
+      // Priority 2: Any British/UK English voice
+      if (!voice) {
+        voice = voices.find(v => v.lang.includes('en-GB') || v.lang.includes('en-UK'));
+      }
+      
+      // Priority 3: English male voices
+      if (!voice) {
+        voice = voices.find(v => 
+          v.lang.startsWith('en') && 
+          (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || 
+           v.name.toLowerCase().includes('james'))
+        );
+      }
+      
+      // Priority 4: Any English voice with deeper pitch
+      if (!voice) {
+        voice = voices.find(v => v.lang.startsWith('en'));
+      }
+      
+      // Fallback: First available voice
+      if (!voice) {
+        voice = voices[0];
+      }
+      
+      if (voice) {
+        console.log('Selected voice:', voice.name, '(' + voice.lang + ')');
+      }
+      
+      return voice;
+    }
+
+    // Load voices when available
+    speechSynthesis.onvoiceschanged = function() {
+      if (!voicesLoaded) {
+        selectedVoice = loadVoices();
+        voicesLoaded = true;
+      }
+    };
+
+    // Enhanced speech function with better voice selection
     function readQuote() {
       // If already playing, stop
       if (isPlaying) {
@@ -253,13 +307,26 @@
         return;
       }
 
-      // Create and speak
+      // Ensure voices are loaded
+      if (!voicesLoaded) {
+        selectedVoice = loadVoices();
+        voicesLoaded = true;
+      }
+
+      // Create and configure utterance
       currentUtterance = new SpeechSynthesisUtterance(fullText);
-      currentUtterance.rate = 0.9;
-      currentUtterance.pitch = 1.0;
+      
+      // Set voice if available
+      if (selectedVoice) {
+        currentUtterance.voice = selectedVoice;
+      }
+      
+      // Voice settings for deeper, more pleasant sound
+      currentUtterance.rate = 0.85;  // Slightly slower for gravitas
+      currentUtterance.pitch = 0.9;  // Slightly lower pitch for depth
       currentUtterance.volume = 1.0;
 
-      // Simple event handlers
+      // Event handlers
       currentUtterance.onstart = function() {
         isPlaying = true;
         updateButton(true);
@@ -274,7 +341,9 @@
         console.error('Speech error:', event.error);
         isPlaying = false;
         resetButton();
-        alert('Could not read text. Please try again.');
+        if (event.error !== 'interrupted') {
+          alert('Could not read text. Please try again.');
+        }
       };
 
       // Speak it
