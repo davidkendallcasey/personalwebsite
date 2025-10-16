@@ -98,10 +98,10 @@ class QuoteSharer {
         canvas.height = 1080;
         const ctx = canvas.getContext('2d');
 
-        // Background gradient
+        // Background gradient - pure neutral grays
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         gradient.addColorStop(0, '#1a1a1a');
-        gradient.addColorStop(1, '#2a1a1a');
+        gradient.addColorStop(1, '#252525');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -136,12 +136,12 @@ class QuoteSharer {
         }
         ctx.fillText(line, x, y);
 
-        // Attribution
+        // Attribution - right aligned with proper positioning
         y += 100;
         ctx.fillStyle = '#b8b5b2';
         ctx.font = '32px Georgia, serif';
         ctx.textAlign = 'right';
-        ctx.fillText(sourceText, canvas.width - 80, y);
+        ctx.fillText(sourceText, canvas.width - 120, y);
 
         // Footer
         ctx.fillStyle = '#666';
