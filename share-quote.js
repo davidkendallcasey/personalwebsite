@@ -105,21 +105,12 @@ class QuoteSharer {
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Accent line
-        ctx.fillStyle = '#8b4c42';
-        ctx.fillRect(80, 120, 6, 840);
-
-        // Quote text
-        ctx.fillStyle = '#e8e6e3';
+        // Calculate quote lines first to determine total height
         ctx.font = 'italic 42px Georgia, serif';
-        ctx.textAlign = 'left';
-        
         const maxWidth = 880;
-        const x = 120;
-        let y = 200;
         const lineHeight = 65;
-        
         const words = quoteText.split(' ');
+        const quoteLines = [];
         let line = '';
         
         for (let i = 0; i < words.length; i++) {
@@ -127,17 +118,46 @@ class QuoteSharer {
             const metrics = ctx.measureText(testLine);
             
             if (metrics.width > maxWidth && i > 0) {
-                ctx.fillText(line, x, y);
+                quoteLines.push(line);
                 line = words[i] + ' ';
-                y += lineHeight;
             } else {
                 line = testLine;
             }
         }
-        ctx.fillText(line, x, y);
+        quoteLines.push(line);
+
+        // Calculate total content height
+        const quoteHeight = quoteLines.length * lineHeight;
+        const attributionHeight = 32; // font size
+        const spacingBetween = 100;
+        const footerHeight = 22;
+        const totalContentHeight = quoteHeight + spacingBetween + attributionHeight;
+        
+        // Center content vertically (leaving space for footer at bottom)
+        const availableHeight = canvas.height - 120; // 60px top padding + 60px bottom for footer
+        const startY = (availableHeight - totalContentHeight) / 2 + 60;
+
+        // Draw accent line centered with content
+        const accentStartY = startY - 40;
+        const accentHeight = totalContentHeight + 80;
+        ctx.fillStyle = '#8b4c42';
+        ctx.fillRect(80, accentStartY, 6, accentHeight);
+
+        // Draw quote text (centered)
+        ctx.fillStyle = '#e8e6e3';
+        ctx.font = 'italic 42px Georgia, serif';
+        ctx.textAlign = 'left';
+        
+        const x = 120;
+        let y = startY;
+        
+        quoteLines.forEach((line) => {
+            ctx.fillText(line, x, y);
+            y += lineHeight;
+        });
 
         // Attribution - right aligned with proper positioning
-        y += 100;
+        y += spacingBetween;
         ctx.fillStyle = '#b8b5b2';
         ctx.font = '32px Georgia, serif';
         ctx.textAlign = 'right';
