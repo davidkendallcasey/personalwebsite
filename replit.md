@@ -44,7 +44,41 @@ This is a static website that serves as a digital commonplace book - a collectio
   - Set up deployment configuration for autoscale
   - Added .gitignore for Node.js project
 
+- 2025-10-16: Major Feature Enhancements
+  - **Universal Search**: Added search bar to all pages (homepage and quote pages) with auto-discovery of new content
+  - **Auto-Discovery**: Search automatically discovers pages from commonplace.html - no manual rebuilds needed when adding quotes
+  - **Enhanced Text-to-Speech**: Improved voice selection with priority for British male voices (deeper, more comforting sound)
+  - **Keyboard Shortcuts**: Added "/" to focus search and "Escape" to close results
+  - **Instagram Sharing**: Implemented beautiful quote screenshot generation with Web Share API
+    - Network share icon on each quote
+    - Generates styled 1080x1080 images perfect for Instagram
+    - Uses html2canvas for high-quality screenshot rendering
+    - Web Share API integration for mobile devices
+  - **Removed**: Deleted unused on-art.html file (replaced by on-art-and-creativity.html)
+
+## Key Features
+
+### Search Functionality
+- Available on all pages via dynamic search bar
+- Automatically discovers new pages from the index
+- Real-time search with highlighted results
+- Keyboard shortcuts: "/" to search, "Escape" to close
+
+### Text-to-Speech
+- Prioritizes British/UK English male voices
+- Falls back gracefully to other English voices
+- Configurable rate (0.85) and pitch (0.9) for deeper, more pleasant sound
+- Shows selected voice in console
+
+### Quote Sharing
+- Share button with network icon on each quote
+- Generates beautifully styled screenshot images
+- 1080x1080 format optimized for Instagram
+- Web Share API on mobile, download fallback on desktop
+- Styled with gradient backgrounds and proper typography
+
 ## Notes
-- The `create-index.js` script can be run with `npm run create-index` to generate a search index, but the dynamic search works without it
+- The `create-index.js` script is no longer needed - search auto-discovers pages
 - All quote pages follow the same HTML structure with `.quote-entry` classes
 - The website uses localStorage for daily quote persistence and search history
+- Mobile-optimized with responsive fonts and touch-friendly buttons
