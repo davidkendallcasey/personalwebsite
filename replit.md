@@ -49,12 +49,13 @@ This is a static website that serves as a digital commonplace book - a collectio
   - **Auto-Discovery**: Search automatically discovers pages from commonplace.html - no manual rebuilds needed when adding quotes
   - **Enhanced Text-to-Speech**: Improved voice selection with priority for British male voices (deeper, more comforting sound)
   - **Keyboard Shortcuts**: Added "/" to focus search and "Escape" to close results
-  - **Instagram Sharing**: Implemented beautiful quote screenshot generation with Web Share API
+  - **Quote Image Sharing**: Canvas-generated images for Instagram
     - Network share icon on each quote
-    - Generates styled 1080x1080 images perfect for Instagram
-    - Uses html2canvas for high-quality screenshot rendering
-    - Web Share API integration for mobile devices
-  - **Removed**: Deleted unused on-art.html file (replaced by on-art-and-creativity.html)
+    - Generates clean 1080x1080 images using Canvas API (not screenshots)
+    - Beautiful gradient background with accent styling
+    - Web Share API on mobile, download fallback on desktop
+    - No rendering issues or unwanted elements
+  - **Removed**: Deleted unused on-art.html file and html2canvas dependency
 
 ## Key Features
 
@@ -72,10 +73,11 @@ This is a static website that serves as a digital commonplace book - a collectio
 
 ### Quote Sharing
 - Share button with network icon on each quote
-- Generates beautifully styled screenshot images
-- 1080x1080 format optimized for Instagram
-- Web Share API on mobile, download fallback on desktop
-- Styled with gradient backgrounds and proper typography
+- Generates beautiful 1080x1080 images using Canvas API
+- Clean gradient backgrounds with styled text
+- Web Share API on mobile (share directly to Instagram)
+- Download fallback on desktop
+- No screenshot rendering issues - pure canvas drawing
 
 ## Notes
 - The `create-index.js` script is no longer needed - search auto-discovers pages

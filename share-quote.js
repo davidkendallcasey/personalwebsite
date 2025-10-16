@@ -1,4 +1,4 @@
-// Quote Sharing with Text-Based Functionality
+// Quote Sharing with Canvas-Generated Images
 
 class QuoteSharer {
     constructor() {
@@ -22,7 +22,7 @@ class QuoteSharer {
             const shareBtn = document.createElement('button');
             shareBtn.className = 'share-quote-btn';
             shareBtn.setAttribute('aria-label', 'Share quote');
-            shareBtn.setAttribute('title', 'Share quote');
+            shareBtn.setAttribute('title', 'Share quote as image');
             shareBtn.innerHTML = `
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="18" cy="5" r="3"></circle>
@@ -35,7 +35,7 @@ class QuoteSharer {
             
             shareBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.shareQuote(entry);
+                this.shareQuote(entry, index);
             });
             
             const sourceEl = entry.querySelector('.source');
@@ -47,47 +47,117 @@ class QuoteSharer {
         });
     }
 
-    async shareQuote(quoteEntry) {
+    async shareQuote(quoteEntry, index) {
         try {
-            const blockquote = quoteEntry.querySelector('blockquote');
-            const source = quoteEntry.querySelector('.source');
+            const shareBtn = quoteEntry.querySelector('.share-quote-btn');
+            const originalHTML = shareBtn.innerHTML;
+            shareBtn.innerHTML = '<span style="font-size: 0.9em;">...</span>';
+            shareBtn.disabled = true;
+
+            const blob = await this.generateQuoteImage(quoteEntry);
             
-            const quoteText = blockquote ? blockquote.innerText.trim() : '';
-            const sourceText = source ? source.innerText.trim() : '';
-            
-            const shareText = `"${quoteText}"\n\n${sourceText}`;
-            
-            if (navigator.share) {
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'quote.png', { type: 'image/png' })] })) {
+                const file = new File([blob], 'quote.png', { type: 'image/png' });
                 await navigator.share({
-                    text: shareText
+                    files: [file],
+                    title: 'Quote',
+                    text: 'Check out this quote!'
                 });
             } else {
-                await navigator.clipboard.writeText(shareText);
-                this.showCopyNotification();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `quote-${index + 1}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showNotification('Image saved! You can now upload it to Instagram.');
             }
+
+            shareBtn.innerHTML = originalHTML;
+            shareBtn.disabled = false;
         } catch (error) {
-            if (error.name !== 'AbortError') {
-                console.error('Error sharing quote:', error);
-                try {
-                    const blockquote = quoteEntry.querySelector('blockquote');
-                    const source = quoteEntry.querySelector('.source');
-                    const quoteText = blockquote ? blockquote.innerText.trim() : '';
-                    const sourceText = source ? source.innerText.trim() : '';
-                    const shareText = `"${quoteText}"\n\n${sourceText}`;
-                    
-                    await navigator.clipboard.writeText(shareText);
-                    this.showCopyNotification();
-                } catch (clipboardError) {
-                    alert('Could not share or copy quote. Please try again.');
-                }
+            console.error('Error sharing quote:', error);
+            const shareBtn = quoteEntry.querySelector('.share-quote-btn');
+            if (shareBtn) {
+                shareBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`;
+                shareBtn.disabled = false;
             }
         }
     }
 
-    showCopyNotification() {
+    async generateQuoteImage(quoteEntry) {
+        const blockquote = quoteEntry.querySelector('blockquote');
+        const source = quoteEntry.querySelector('.source');
+        
+        const quoteText = blockquote ? blockquote.innerText.trim() : '';
+        const sourceText = source ? source.innerText.trim() : '';
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1080;
+        const ctx = canvas.getContext('2d');
+
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#1a1a1a');
+        gradient.addColorStop(1, '#2a1a1a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Accent line
+        ctx.fillStyle = '#8b4c42';
+        ctx.fillRect(80, 120, 6, 840);
+
+        // Quote text
+        ctx.fillStyle = '#e8e6e3';
+        ctx.font = 'italic 42px Georgia, serif';
+        ctx.textAlign = 'left';
+        
+        const maxWidth = 880;
+        const x = 120;
+        let y = 200;
+        const lineHeight = 65;
+        
+        const words = quoteText.split(' ');
+        let line = '';
+        
+        for (let i = 0; i < words.length; i++) {
+            const testLine = line + words[i] + ' ';
+            const metrics = ctx.measureText(testLine);
+            
+            if (metrics.width > maxWidth && i > 0) {
+                ctx.fillText(line, x, y);
+                line = words[i] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, x, y);
+
+        // Attribution
+        y += 100;
+        ctx.fillStyle = '#b8b5b2';
+        ctx.font = '32px Georgia, serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(sourceText, canvas.width - 80, y);
+
+        // Footer
+        ctx.fillStyle = '#666';
+        ctx.font = '22px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText("David Kendall Casey's Commonplace Book", canvas.width / 2, canvas.height - 60);
+
+        return new Promise((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
+        });
+    }
+
+    showNotification(message) {
         const notification = document.createElement('div');
-        notification.className = 'copy-notification';
-        notification.textContent = 'Quote copied to clipboard!';
+        notification.className = 'share-notification';
+        notification.textContent = message;
         document.body.appendChild(notification);
         
         setTimeout(() => notification.classList.add('show'), 10);
@@ -95,7 +165,7 @@ class QuoteSharer {
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
-        }, 2000);
+        }, 3000);
     }
 }
 
@@ -134,7 +204,7 @@ const shareButtonStyles = `
     height: 18px;
 }
 
-.copy-notification {
+.share-notification {
     position: fixed;
     bottom: 20px;
     left: 50%;
@@ -150,7 +220,7 @@ const shareButtonStyles = `
     pointer-events: none;
 }
 
-.copy-notification.show {
+.share-notification.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
