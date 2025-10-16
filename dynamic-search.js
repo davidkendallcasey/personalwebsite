@@ -202,6 +202,23 @@ class DynamicSearch {
                     searchResults.style.display = 'block';
                 }
             });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // "/" key to focus search (but not if typing in an input)
+                if (e.key === '/' && !e.target.matches('input, textarea')) {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+                
+                // "Escape" key to close search results
+                if (e.key === 'Escape') {
+                    searchResults.style.display = 'none';
+                    if (document.activeElement === searchInput) {
+                        searchInput.blur();
+                    }
+                }
+            });
         }
     }
 
