@@ -386,6 +386,17 @@ hr.divider {
     font-size: 2.2em; /* Increased from 2.0em */
 }
 
+/* Disclaimer Style */
+.disclaimer {
+    text-align: center;
+    font-size: 0.9em;
+    color: #888; /* Muted gray */
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #333; /* Subtle separator line */
+    font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .categories-grid {
