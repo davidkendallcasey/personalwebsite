@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>David Kendall Casey</title>
   <link rel="stylesheet" href="stylesheet.css">
-  <!-- Font Awesome for play/pause icons -->
   <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -148,10 +147,10 @@
 
       // Get quote history to avoid repetition
       let quoteHistory = JSON.parse(localStorage.getItem('quoteHistory') || '[]');
-      const maxHistorySize = 50;
+      const maxHistorySize = 300; // MODIFIED: Increased from 50 to 300 for a much slower cycle
       
       let attempts = 0;
-      let maxAttempts = 20;
+      let maxAttempts = 50; // MODIFIED: Increased from 20 to 50 for more robust selection
       let selectedQuote = null;
 
       while (!selectedQuote && attempts < maxAttempts) {
@@ -211,6 +210,7 @@
       }
       
       if (!selectedQuote) {
+        // If after 50 attempts, no quote is found, clear the history and try again
         localStorage.removeItem('quoteHistory');
         if (attempts < maxAttempts + 5) {
           return displayDailyQuote();
@@ -390,11 +390,9 @@
     });
   </script>
 
-  <!-- Include the dynamic search script -->
   <script src="add-quote-ids.js"></script>
   <script src="dynamic-search.js"></script>
   
-  <!-- Quote sharing functionality -->
   <script src="share-quote.js"></script>
 </body>
 </html>
