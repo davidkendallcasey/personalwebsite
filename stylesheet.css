@@ -189,10 +189,15 @@ span.work-title,
     width: 70%;
     position: relative;
     overflow: visible;
-    background: none; /* Removed the background from here */
+    background: none !important; /* Forces transparency so no solid line shows */
 }
 
-/* The Line - Now created with ::before so we can cut a hole in it */
+/* Remove the conflicting colored background from the specific hr rule */
+hr.divider {
+    background-color: transparent !important;
+}
+
+/* The Line - Now matches the accent color */
 .divider::before {
     content: "";
     position: absolute;
@@ -200,15 +205,15 @@ span.work-title,
     left: 0;
     width: 100%;
     height: 100%;
-    /* The original line gradient */
-    background-image: linear-gradient(to right, transparent, #444, transparent);
+    /* CHANGED: Uses #8b4c42 (Accent Color) instead of #444 (Gray) */
+    background-image: linear-gradient(to right, transparent, #8b4c42, transparent);
     
-    /* The Magic: Create a transparent gap in the center of the line */
+    /* The Mask: Cuts the hole in the center */
     -webkit-mask-image: linear-gradient(to right, black calc(50% - 25px), transparent calc(50% - 25px), transparent calc(50% + 25px), black calc(50% + 25px));
     mask-image: linear-gradient(to right, black calc(50% - 25px), transparent calc(50% - 25px), transparent calc(50% + 25px), black calc(50% + 25px));
 }
 
-/* The Ornament - Adds the symbol in the center */
+/* The Ornament */
 .divider::after {
     content: "❧";
     position: absolute;
@@ -216,7 +221,7 @@ span.work-title,
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: transparent;
-    color: #8b4c42;
+    color: #8b4c42; /* Matches the line color now */
     font-family: serif;
     font-size: 1.5em;
     padding: 0;
