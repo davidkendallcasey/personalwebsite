@@ -238,7 +238,7 @@
          </a>`;
     }
 
-    // Voice selection - prefer British male voices
+    // Voice selection - Optimized for Natural/Neural voices
     let selectedVoice = null;
     let voicesLoaded = false;
 
@@ -246,35 +246,34 @@
       const voices = speechSynthesis.getVoices();
       if (voices.length === 0) return null;
       
-      // Priority 1: British/UK English male voices
-      let voice = voices.find(v => 
-        (v.lang.includes('en-GB') || v.lang.includes('en-UK')) && 
-        (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('daniel') || 
-         v.name.toLowerCase().includes('george') || v.name.toLowerCase().includes('oliver'))
-      );
+      // Priority 1: "Google" voices (High quality, available in Chrome/Android)
+      // Specifically target Google UK English Male if available
+      let voice = voices.find(v => v.name === 'Google UK English Male');
       
-      // Priority 2: Any British/UK English voice
-      if (!voice) {
-        voice = voices.find(v => v.lang.includes('en-GB') || v.lang.includes('en-UK'));
-      }
-      
-      // Priority 3: English male voices
+      // Priority 2: Voices marked as "Natural" or "Enhanced" (Edge/Safari)
       if (!voice) {
         voice = voices.find(v => 
           v.lang.startsWith('en') && 
-          (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || 
-           v.name.toLowerCase().includes('james'))
+          (v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Premium'))
+        );
+      }
+
+      // Priority 3: Specific high-quality OS voices (macOS/iOS "Daniel", etc.)
+      if (!voice) {
+        voice = voices.find(v => 
+          (v.lang.includes('en-GB') || v.lang.includes('en-UK')) && 
+          (v.name.includes('Daniel') || v.name.includes('Arthur') || v.name.includes('Martha'))
         );
       }
       
-      // Priority 4: Any English voice with deeper pitch
+      // Priority 4: Any English voice starting with "Google"
       if (!voice) {
-        voice = voices.find(v => v.lang.startsWith('en'));
+         voice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'));
       }
       
-      // Fallback: First available voice
+      // Fallback: First available English voice
       if (!voice) {
-        voice = voices[0];
+        voice = voices.find(v => v.lang.startsWith('en'));
       }
       
       if (voice) {
@@ -292,45 +291,40 @@
       }
     };
 
-    // Enhanced speech function with better voice selection
+    // Enhanced speech function
     function readQuote() {
-      // If already playing, stop
       if (isPlaying) {
         speechSynthesis.cancel();
         resetButton();
         return;
       }
 
-      // Get the text
       const quoteText = document.getElementById('quote-text').innerText || '';
       const sourceText = document.getElementById('quote-source').innerText || '';
-      const fullText = quoteText + ' ' + sourceText;
+      // Add a pause between quote and source using punctuation
+      const fullText = quoteText + '... ... ' + sourceText;
 
       if (!fullText.trim()) {
         alert('No text to read');
         return;
       }
 
-      // Ensure voices are loaded
       if (!voicesLoaded) {
         selectedVoice = loadVoices();
         voicesLoaded = true;
       }
 
-      // Create and configure utterance
       currentUtterance = new SpeechSynthesisUtterance(fullText);
       
-      // Set voice if available
       if (selectedVoice) {
         currentUtterance.voice = selectedVoice;
       }
       
-      // Voice settings for deeper, more pleasant sound
-      currentUtterance.rate = 0.85;  // Slightly slower for gravitas
-      currentUtterance.pitch = 0.9;  // Slightly lower pitch for depth
+      // Optimization: Closer to 1.0 reduces robotic artifacts
+      currentUtterance.rate = 0.95; // Slightly slower than normal, but faster than 0.85
+      currentUtterance.pitch = 1.0; // Natural pitch (altering pitch often sounds artificial)
       currentUtterance.volume = 1.0;
 
-      // Event handlers
       currentUtterance.onstart = function() {
         isPlaying = true;
         updateButton(true);
@@ -346,11 +340,10 @@
         isPlaying = false;
         resetButton();
         if (event.error !== 'interrupted') {
-          alert('Could not read text. Please try again.');
+          // Silent fail for user experience, log to console
         }
       };
 
-      // Speak it
       speechSynthesis.speak(currentUtterance);
     }
 
