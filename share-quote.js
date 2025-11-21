@@ -186,13 +186,21 @@ class QuoteSharer {
         canvas.height = height;
 
         // 5. DRAWING
-        // Background Gradient
-        const gradient = ctx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, '#1a1a1a');
-        gradient.addColorStop(1, '#252525');
-        ctx.fillStyle = gradient;
+        
+        // Background - Solid Color (Matches website base exactly)
+        ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(0, 0, width, height);
 
+        // Add subtle noise effect using simple random dots
+        // Mimics website texture without needing complex SVG filters
+        
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+        for (let i = 0; i < width * height * 0.05; i++) {
+             const x = Math.random() * width;
+             const y = Math.random() * height;
+             ctx.fillRect(x, y, 1, 1);
+        }
+       
         // Calculate Vertical Centering
         // We center the "content block" within the available space between top and footer
         const availableVerticalSpace = height - topPadding - footerHeight;
