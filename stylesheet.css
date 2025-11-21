@@ -89,18 +89,6 @@ h2 {
 }
 
 /* Quote Styles */
-.quote-entry:first-of-type blockquote > p:first-child::first-letter {
-    float: left;
-    font-family: 'Playfair Display', serif;
-    font-size: 3.8em;
-    line-height: 0.65;
-    padding-top: 0.1em;
-    padding-right: 0.1em;
-    padding-left: 0;
-    color: #8b4c42; /* Uses your existing accent color */
-    font-style: normal;
-}
-
 .quote-entry {
     margin-bottom: 2rem;
     padding: 1.5rem;
@@ -108,6 +96,21 @@ h2 {
     border-radius: 8px;
     border-left: 4px solid #8b4c42; /* Matching muted red accent */
     transition: background-color 0.5s ease, border-left-color 0.5s ease;
+}
+
+/* Drop Cap Style - RESTRICTED TO DAILY QUOTE ONLY */
+#quote-of-the-day blockquote > p:first-child::first-letter,
+#quote-of-the-day blockquote::first-letter {
+    float: left;
+    font-family: 'Playfair Display', serif;
+    font-size: 3.8em;
+    line-height: 0.65;
+    padding-top: 0.1em;
+    padding-right: 0.1em;
+    padding-left: 0;
+    color: #8b4c42;
+    font-style: normal;
+    margin-right: 6px;
 }
 
 /* Highlight targeted quote from search results */
