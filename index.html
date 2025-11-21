@@ -78,7 +78,12 @@
   </nav>
 
   <main class="container">
-    <h2 class="daily-selection-heading">Daily Selection</h2>
+   <h2 class="daily-selection-heading">
+        Daily Selection
+        <button onclick="refreshQuote()" title="Shuffle Quote" style="background:none; border:none; cursor:pointer; color:#8b4c42; font-size:0.7em; vertical-align: middle; margin-left: 10px; transition: transform 0.5s ease;">
+            <i id="refresh-icon" class="fas fa-sync-alt"></i>
+        </button>
+    </h2>
     
     <div id="quote-of-the-day" class="quote-entry">
       <p id="quote-header"></p>
@@ -110,17 +115,14 @@
         const html = await response.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
         
-        // Find all links in the categories grid that point to quote pages
         const links = doc.querySelectorAll('.category-link');
         const pages = Array.from(links)
           .map(link => link.getAttribute('href'))
           .filter(href => href && href.endsWith('.html') && href.startsWith('on-'));
         
-        console.log('Discovered quote pages:', pages);
         return pages;
       } catch (error) {
         console.error('Could not load commonplace.html, using fallback pages:', error);
-        // Fallback to current pages if commonplace.html can't be loaded
         return [
           'on-animals.html','on-art-and-creativity.html','on-age.html',
           'on-beauty.html','on-benevolence.html','on-crime-and-punishment.html',
@@ -130,36 +132,48 @@
           'on-hope.html','on-introversion.html','on-joy.html',
           'on-language.html','on-love.html','on-manners.html',
           'on-justice-and-mercy.html','on-mind.html','on-money-and-wealth.html',
-          'on-the-past.html','on-philosophy.html','on-psychology-and-psychiatry.html','on-race-and-racism.html','on-purpose.html','on-reading.html','on-the-sublime.html','on-suffering.html',
+          'on-the-past.html','on-philosophy.html','on-race-and-racism.html',
+          'on-reading.html','on-the-sublime.html','on-suffering.html',
           'on-technology.html','on-truth-and-knowledge.html',
           'on-war-and-violence.html','on-work.html','on-writing.html'
         ];
       }
     }
 
-    // Load and display daily quote
-    async function displayDailyQuote() {
+    // Feature: Manual Refresh
+    function refreshQuote() {
+        const icon = document.getElementById('refresh-icon');
+        if (icon) icon.style.transform = 'rotate(360deg)';
+        // Force a new quote by passing 'true'
+        displayDailyQuote(true);
+        // Reset rotation animation
+        setTimeout(() => { if(icon) icon.style.transform = 'none'; }, 500);
+    }
+
+    // Load and display daily quote (accepts forceRefresh parameter)
+    async function displayDailyQuote(forceRefresh = false) {
       const pages = await getQuotePages();
-      
       const today = new Date().toISOString().split('T')[0];
-      let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
       
-      if (stored.date === today) {
-        displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
-        return;
+      // Only check cache if we aren't forcing a refresh
+      if (!forceRefresh) {
+          let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
+          if (stored.date === today) {
+            displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
+            return;
+          }
       }
 
-      // Get quote history to avoid repetition
+      // Get quote history
       let quoteHistory = JSON.parse(localStorage.getItem('quoteHistory') || '[]');
-      const maxHistorySize = 300; // MODIFIED: Increased from 50 to 300 for a much slower cycle
+      const maxHistorySize = 50;
       
       let attempts = 0;
-      let maxAttempts = 50; // MODIFIED: Increased from 20 to 50 for more robust selection
+      let maxAttempts = 20;
       let selectedQuote = null;
 
       while (!selectedQuote && attempts < maxAttempts) {
         attempts++;
-        
         const page = pages[Math.floor(Math.random() * pages.length)];
         
         try {
@@ -190,12 +204,14 @@
           const name = page.replace(/\.html$/, '').replace(/-/g, ' ');
           const title = name.charAt(0).toUpperCase() + name.slice(1);
           
+          // Update history
           quoteHistory.unshift(selected.quoteId);
           if (quoteHistory.length > maxHistorySize) {
             quoteHistory = quoteHistory.slice(0, maxHistorySize);
           }
           localStorage.setItem('quoteHistory', JSON.stringify(quoteHistory));
           
+          // Store as today's quote (unless just shuffling for fun, but we'll store it anyway)
           const payload = { 
             date: today, 
             quoteHTML, 
@@ -213,13 +229,7 @@
         }
       }
       
-      if (!selectedQuote) {
-        // If after 50 attempts, no quote is found, clear the history and try again
-        localStorage.removeItem('quoteHistory');
-        if (attempts < maxAttempts + 5) {
-          return displayDailyQuote();
-        }
-      } else {
+      if (selectedQuote) {
         displayQuote(selectedQuote.quoteHTML, selectedQuote.sourceText, selectedQuote.title, selectedQuote.page);
       }
     }
@@ -227,15 +237,19 @@
     function displayQuote(html, src, title, url) {
       document.getElementById('quote-text').innerHTML = html;
       
-      // Format the source to match the other pages (with em dash and proper styling)
       const sourceElement = document.getElementById('quote-source');
       sourceElement.innerHTML = `— ${src}`;
-      sourceElement.className = 'source'; // Apply the same CSS class as other pages
+      sourceElement.className = 'source'; 
       
       document.getElementById('quote-header').innerHTML =
         `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">
           ${title}
          </a>`;
+
+      // FIX: Manually trigger the Share Button addition now that the content exists
+      if (window.quoteSharer) {
+        window.quoteSharer.addShareButtons();
+      }
     }
 
     // Voice selection - Optimized for Natural/Neural voices
@@ -247,7 +261,6 @@
       if (voices.length === 0) return null;
       
       // Priority 1: "Google" voices (High quality, available in Chrome/Android)
-      // Specifically target Google UK English Male if available
       let voice = voices.find(v => v.name === 'Google UK English Male');
       
       // Priority 2: Voices marked as "Natural" or "Enhanced" (Edge/Safari)
