@@ -192,7 +192,7 @@ class QuoteSharer {
         ctx.fillRect(0, 0, width, height);
 
         // Add subtle noise effect using simple random dots
-        // Mimics website texture without needing complex SVG filters
+        // (Optional) Mimics website texture without needing complex SVG filters
         
         ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
         for (let i = 0; i < width * height * 0.05; i++) {
