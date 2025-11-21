@@ -90,84 +90,146 @@ class QuoteSharer {
         const blockquote = quoteEntry.querySelector('blockquote');
         const source = quoteEntry.querySelector('.source');
         
-        const quoteText = blockquote ? blockquote.innerText.trim() : '';
+        // 1. GET CLEAN TEXT
+        // We strip out newlines to let the canvas handle wrapping cleanly
+        const quoteText = blockquote ? blockquote.innerText.replace(/\s+/g, ' ').trim() : '';
         const sourceText = source ? source.innerText.trim() : '';
 
+        // 2. SETUP CANVAS CONTEXT FOR MEASURING
         const canvas = document.createElement('canvas');
-        canvas.width = 1080;
-        canvas.height = 1080;
         const ctx = canvas.getContext('2d');
+        
+        // Base Configuration
+        const width = 1080;
+        const padding = 100; // Margins on sides
+        const textMaxWidth = width - (padding * 2);
+        const footerHeight = 80; // Space for "Commonplace Book" at bottom
+        const topPadding = 80;
+        
+        // Dynamic Variables
+        let height = 1080; // Start with standard square
+        let fontSize = 42; // Start with ideal large font
+        let minFontSize = 24; // Don't go smaller than this
+        let lineHeightMultiplier = 1.4;
+        let attributionFontSize = 32;
+        let spacingBetween = 60; // Space between quote and author
 
-        // Background gradient - pure neutral grays
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        // Helper: Calculate lines based on current font size
+        const getLines = (text, size) => {
+            ctx.font = `italic ${size}px Georgia, serif`;
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + " " + word).width;
+                if (width < textMaxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        };
+
+        // 3. DYNAMIC SIZING LOGIC
+        // First, try to fit text in 1080x1080 by shrinking font
+        let quoteLines = [];
+        let quoteBlockHeight = 0;
+        let totalContentHeight = 0;
+        
+        // Available vertical space in a square image
+        const maxSafeHeightSquare = 1080 - topPadding - footerHeight - 100; 
+
+        do {
+            quoteLines = getLines(quoteText, fontSize);
+            quoteBlockHeight = quoteLines.length * (fontSize * lineHeightMultiplier);
+            
+            // Calculate total height including attribution
+            // Attribution scales slightly with main font
+            attributionFontSize = Math.max(22, Math.floor(fontSize * 0.75));
+            const attributionHeight = attributionFontSize * 1.5;
+            
+            totalContentHeight = quoteBlockHeight + spacingBetween + attributionHeight;
+            
+            // If it fits, break. If not, shrink font.
+            if (totalContentHeight <= maxSafeHeightSquare) {
+                break;
+            }
+            
+            if (fontSize > minFontSize) {
+                fontSize -= 2; // Shrink font step by step
+            } else {
+                break; // Can't shrink anymore, will need to resize canvas
+            }
+        } while (true);
+
+        // 4. CANVAS RESIZING LOGIC
+        // If text is still too tall (even at small font), grow the canvas
+        const requiredHeight = totalContentHeight + topPadding + footerHeight + 60; // +60 buffer
+        
+        if (requiredHeight > 1080) {
+            // Try 4:5 Aspect Ratio (Standard Instagram Portrait)
+            if (requiredHeight <= 1350) {
+                height = 1350;
+            } else {
+                // If HUGE, just grow to fit exactly
+                height = requiredHeight;
+            }
+        }
+
+        // Apply final dimensions
+        canvas.width = width;
+        canvas.height = height;
+
+        // 5. DRAWING
+        // Background Gradient
+        const gradient = ctx.createLinearGradient(0, 0, width, height);
         gradient.addColorStop(0, '#1a1a1a');
         gradient.addColorStop(1, '#252525');
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, width, height);
 
-        // Calculate quote lines first to determine total height
-        ctx.font = 'italic 42px Georgia, serif';
-        const maxWidth = 880;
-        const lineHeight = 65;
-        const words = quoteText.split(' ');
-        const quoteLines = [];
-        let line = '';
-        
-        for (let i = 0; i < words.length; i++) {
-            const testLine = line + words[i] + ' ';
-            const metrics = ctx.measureText(testLine);
-            
-            if (metrics.width > maxWidth && i > 0) {
-                quoteLines.push(line);
-                line = words[i] + ' ';
-            } else {
-                line = testLine;
-            }
-        }
-        quoteLines.push(line);
+        // Calculate Vertical Centering
+        // We center the "content block" within the available space between top and footer
+        const availableVerticalSpace = height - topPadding - footerHeight;
+        const startY = topPadding + (availableVerticalSpace - totalContentHeight) / 2;
 
-        // Calculate total content height
-        const quoteHeight = quoteLines.length * lineHeight;
-        const attributionHeight = 32; // font size
-        const spacingBetween = 100;
-        const footerHeight = 22;
-        const totalContentHeight = quoteHeight + spacingBetween + attributionHeight;
-        
-        // Center content vertically (leaving space for footer at bottom)
-        const availableHeight = canvas.height - 120; // 60px top padding + 60px bottom for footer
-        const startY = (availableHeight - totalContentHeight) / 2 + 60;
-
-        // Draw accent line centered with content
-        const accentStartY = startY - 40;
-        const accentHeight = totalContentHeight + 80;
+        // Draw Accent Line (vertical red line on left)
+        const accentX = padding - 40;
+        const accentHeight = totalContentHeight;
         ctx.fillStyle = '#8b4c42';
-        ctx.fillRect(80, accentStartY, 6, accentHeight);
+        ctx.fillRect(accentX, startY, 6, accentHeight);
 
-        // Draw quote text (centered)
+        // Draw Quote Text
         ctx.fillStyle = '#e8e6e3';
-        ctx.font = 'italic 42px Georgia, serif';
+        ctx.font = `italic ${fontSize}px Georgia, serif`;
         ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
         
-        const x = 120;
-        let y = startY;
-        
+        let currentY = startY;
         quoteLines.forEach((line) => {
-            ctx.fillText(line, x, y);
-            y += lineHeight;
+            ctx.fillText(line, padding, currentY);
+            currentY += (fontSize * lineHeightMultiplier);
         });
 
-        // Attribution - right aligned with proper positioning
-        y += spacingBetween;
+        // Draw Attribution
+        // Positioned relative to end of quote
+        const attributionY = startY + quoteBlockHeight + (spacingBetween / 2); 
         ctx.fillStyle = '#b8b5b2';
-        ctx.font = '32px Georgia, serif';
+        ctx.font = `${attributionFontSize}px Georgia, serif`;
         ctx.textAlign = 'right';
-        ctx.fillText(sourceText, canvas.width - 120, y);
+        ctx.fillText(sourceText, width - padding, attributionY);
 
-        // Footer
+        // Draw Footer
         ctx.fillStyle = '#666';
         ctx.font = '22px Georgia, serif';
         ctx.textAlign = 'center';
-        ctx.fillText("David Kendall Casey's Commonplace Book", canvas.width / 2, canvas.height - 60);
+        ctx.textBaseline = 'bottom';
+        ctx.fillText("David Kendall Casey's Commonplace Book", width / 2, height - 30);
 
         return new Promise((resolve) => {
             canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
