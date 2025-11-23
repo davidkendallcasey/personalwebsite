@@ -494,3 +494,176 @@ hr.divider {
         font-size: 1.5em; /* Increased from 1.4em */
     }
 }
+/* --- CV Page Styles --- */
+
+.cv-container {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.cv-contact-info {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: #b8b5b2;
+    font-size: 1.1em;
+}
+
+.cv-contact-info a {
+    color: #d4d1ce;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.cv-contact-info a:hover {
+    color: #8b4c42;
+}
+
+.cv-contact-info .separator {
+    color: #8b4c42;
+    margin: 0 0.5rem;
+}
+
+.cv-section {
+    margin-bottom: 2.5rem;
+}
+
+.cv-section h3 {
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.5rem;
+    color: #f5f3f0;
+    margin-bottom: 1.5rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 1.3em;
+}
+
+.cv-item {
+    display: flex;
+    margin-bottom: 1.5rem;
+}
+
+.cv-date {
+    flex: 0 0 140px;
+    color: #8b4c42;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1em;
+    padding-right: 1rem;
+    font-weight: 500;
+}
+
+.cv-content {
+    flex: 1;
+}
+
+.cv-main-text {
+    color: #e8e6e3;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: 1.1em;
+}
+
+.cv-sub-text {
+    color: #d4d1ce;
+    display: block;
+    margin-bottom: 0.4rem;
+    font-style: italic;
+}
+
+.cv-location {
+    display: block;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 0.2rem;
+}
+
+.cv-detail {
+    font-size: 1em;
+    color: #b8b5b2;
+    line-height: 1.6;
+    margin-top: 0.3rem;
+}
+
+/* Subsection titles like "Nonfiction" */
+.cv-subsection h4 {
+    color: #d4d1ce;
+    margin-bottom: 0.8rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1.1em;
+    margin-top: 0;
+}
+
+.cv-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+}
+
+.cv-list li {
+    margin-bottom: 0.8rem;
+    color: #b8b5b2;
+    line-height: 1.5;
+    padding-left: 1rem;
+    border-left: 2px solid #333;
+}
+
+.cv-simple-list {
+    list-style: none;
+    padding: 0;
+}
+
+.cv-simple-list li {
+    margin-bottom: 0.5rem;
+    color: #b8b5b2;
+}
+
+.cv-simple-list strong {
+    color: #d4d1ce;
+}
+
+.cv-interests-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.cv-interests-grid ul {
+    margin-top: 0.5rem;
+    padding-left: 1.2rem;
+    color: #b8b5b2;
+}
+
+.cv-interests-grid ul li {
+    margin-bottom: 0.3rem;
+}
+
+/* Light divider for sections */
+.divider-light {
+    border: none;
+    height: 1px;
+    background-color: #333;
+    margin: 2rem auto;
+    width: 100%;
+}
+
+/* Current page indicator in nav */
+nav a.current-page {
+    color: #f5f3f0;
+    border-bottom: 2px solid #8b4c42;
+}
+
+@media (max-width: 700px) {
+    .cv-item {
+        flex-direction: column;
+    }
+    .cv-date {
+        margin-bottom: 0.25rem;
+        color: #b8654a; /* Slightly lighter on mobile */
+    }
+    .cv-interests-grid {
+        grid-template-columns: 1fr;
+    }
+}
