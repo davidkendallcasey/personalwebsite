@@ -86,158 +86,186 @@ class QuoteSharer {
         }
     }
 
+    // 1. Helper: Parse HTML to find which words should be italicized
+    extractStyledTokens(node) {
+        let tokens = [];
+        
+        const traverse = (currentNode, style) => {
+            if (currentNode.nodeType === Node.TEXT_NODE) {
+                const text = currentNode.textContent;
+                if (!text) return;
+                
+                // Split text to handle wrapping, but keep formatting info
+                const parts = text.split(/(\s+)/);
+                
+                parts.forEach(part => {
+                    if (part.length === 0) return;
+                    // Treat newlines as spaces
+                    const cleanText = part.replace(/[\n\r]+/g, ' ');
+                    const isWhitespace = /^\s+$/.test(part);
+                    
+                    tokens.push({
+                        text: cleanText,
+                        isItalic: style.italic,
+                        isSpace: isWhitespace,
+                        isBreak: false
+                    });
+                });
+            } else if (currentNode.nodeType === Node.ELEMENT_NODE) {
+                const tagName = currentNode.tagName.toLowerCase();
+                const newStyle = { ...style };
+                
+                // Detect italic tags
+                if (tagName === 'i' || tagName === 'em') {
+                    newStyle.italic = true;
+                }
+                
+                // Handle line breaks
+                if (tagName === 'br') {
+                    tokens.push({ text: '', isBreak: true });
+                }
+                
+                // Handle paragraphs (double break)
+                if (tagName === 'p' && tokens.length > 0) {
+                     tokens.push({ text: '', isBreak: true });
+                     tokens.push({ text: '', isBreak: true });
+                }
+
+                currentNode.childNodes.forEach(child => traverse(child, newStyle));
+            }
+        };
+
+        traverse(node, { italic: false });
+        return tokens;
+    }
+
+    // 2. Helper: Calculate line wrapping for mixed fonts
+    calculateLines(ctx, tokens, maxWidth, baseFontFamily) {
+        const lines = [];
+        let currentLine = [];
+        let currentLineWidth = 0;
+        
+        const normalFont = `42px ${baseFontFamily}`;
+        const italicFont = `italic 42px ${baseFontFamily}`;
+
+        for (let i = 0; i < tokens.length; i++) {
+            const token = tokens[i];
+            
+            if (token.isBreak) {
+                if (currentLine.length > 0) {
+                    lines.push(currentLine);
+                    currentLine = [];
+                    currentLineWidth = 0;
+                } else {
+                     lines.push([]); // Empty line for spacing
+                }
+                continue;
+            }
+
+            // Set font to measure accurate width
+            ctx.font = token.isItalic ? italicFont : normalFont;
+            const metrics = ctx.measureText(token.text);
+            const tokenWidth = metrics.width;
+
+            if (token.isSpace) {
+                if (currentLine.length > 0) {
+                    currentLine.push({ ...token, width: tokenWidth });
+                    currentLineWidth += tokenWidth;
+                }
+            } else {
+                if (currentLineWidth + tokenWidth > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine); // Wrap
+                    currentLine = [];
+                    currentLineWidth = 0;
+                    currentLine.push({ ...token, width: tokenWidth });
+                    currentLineWidth += tokenWidth;
+                } else {
+                    currentLine.push({ ...token, width: tokenWidth });
+                    currentLineWidth += tokenWidth;
+                }
+            }
+        }
+        
+        if (currentLine.length > 0) lines.push(currentLine);
+        return lines;
+    }
+
+    // 3. Main Generator Function (Replaces the old one)
     async generateQuoteImage(quoteEntry) {
         const blockquote = quoteEntry.querySelector('blockquote');
         const source = quoteEntry.querySelector('.source');
         
-        // 1. GET CLEAN TEXT
-        // We strip out newlines to let the canvas handle wrapping cleanly
-        const quoteText = blockquote ? blockquote.innerText.replace(/\s+/g, ' ').trim() : '';
+        // Use the new helper to get tokens instead of plain text
+        const tokens = blockquote ? this.extractStyledTokens(blockquote) : [];
         const sourceText = source ? source.innerText.trim() : '';
 
-        // 2. SETUP CANVAS CONTEXT FOR MEASURING
         const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1080;
         const ctx = canvas.getContext('2d');
+
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, '#1a1a1a');
+        gradient.addColorStop(1, '#252525');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Configuration
+        const maxWidth = 880;
+        const lineHeight = 65;
+        const baseFontFamily = 'Georgia, serif';
+        const normalFont = `42px ${baseFontFamily}`;
+        const italicFont = `italic 42px ${baseFontFamily}`;
+
+        // Calculate lines using the new helper
+        const quoteLines = this.calculateLines(ctx, tokens, maxWidth, baseFontFamily);
+
+        const quoteHeight = quoteLines.length * lineHeight;
+        const attributionHeight = 32;
+        const spacingBetween = 100;
+        const totalContentHeight = quoteHeight + spacingBetween + attributionHeight;
         
-        // Base Configuration
-        const width = 1080;
-        const padding = 100; // Margins on sides
-        const textMaxWidth = width - (padding * 2);
-        const footerHeight = 80; // Space for "Commonplace Book" at bottom
-        const topPadding = 80;
-        
-        // Dynamic Variables
-        let height = 1080; // Start with standard square
-        let fontSize = 42; // Start with ideal large font
-        let minFontSize = 24; // Don't go smaller than this
-        let lineHeightMultiplier = 1.4;
-        let attributionFontSize = 32;
-        let spacingBetween = 60; // Space between quote and author
+        const availableHeight = canvas.height - 120;
+        const startY = (availableHeight - totalContentHeight) / 2 + 60;
 
-        // Helper: Calculate lines based on current font size
-        const getLines = (text, size) => {
-            ctx.font = `italic ${size}px Georgia, serif`;
-            const words = text.split(' ');
-            const lines = [];
-            let currentLine = words[0];
-
-            for (let i = 1; i < words.length; i++) {
-                const word = words[i];
-                const width = ctx.measureText(currentLine + " " + word).width;
-                if (width < textMaxWidth) {
-                    currentLine += " " + word;
-                } else {
-                    lines.push(currentLine);
-                    currentLine = word;
-                }
-            }
-            lines.push(currentLine);
-            return lines;
-        };
-
-        // 3. DYNAMIC SIZING LOGIC
-        // First, try to fit text in 1080x1080 by shrinking font
-        let quoteLines = [];
-        let quoteBlockHeight = 0;
-        let totalContentHeight = 0;
-        
-        // Available vertical space in a square image
-        const maxSafeHeightSquare = 1080 - topPadding - footerHeight - 100; 
-
-        do {
-            quoteLines = getLines(quoteText, fontSize);
-            quoteBlockHeight = quoteLines.length * (fontSize * lineHeightMultiplier);
-            
-            // Calculate total height including attribution
-            // Attribution scales slightly with main font
-            attributionFontSize = Math.max(22, Math.floor(fontSize * 0.75));
-            const attributionHeight = attributionFontSize * 1.5;
-            
-            totalContentHeight = quoteBlockHeight + spacingBetween + attributionHeight;
-            
-            // If it fits, break. If not, shrink font.
-            if (totalContentHeight <= maxSafeHeightSquare) {
-                break;
-            }
-            
-            if (fontSize > minFontSize) {
-                fontSize -= 2; // Shrink font step by step
-            } else {
-                break; // Can't shrink anymore, will need to resize canvas
-            }
-        } while (true);
-
-        // 4. CANVAS RESIZING LOGIC
-        // If text is still too tall (even at small font), grow the canvas
-        const requiredHeight = totalContentHeight + topPadding + footerHeight + 60; // +60 buffer
-        
-        if (requiredHeight > 1080) {
-            // Try 4:5 Aspect Ratio (Standard Instagram Portrait)
-            if (requiredHeight <= 1350) {
-                height = 1350;
-            } else {
-                // If HUGE, just grow to fit exactly
-                height = requiredHeight;
-            }
-        }
-
-        // Apply final dimensions
-        canvas.width = width;
-        canvas.height = height;
-
-        // 5. DRAWING
-        
-        // Background - Solid Color (Matches website base exactly)
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(0, 0, width, height);
-
-        // Add subtle noise effect using simple random dots
-        // (Optional) Mimics website texture without needing complex SVG filters
-        
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-        for (let i = 0; i < width * height * 0.05; i++) {
-             const x = Math.random() * width;
-             const y = Math.random() * height;
-             ctx.fillRect(x, y, 1, 1);
-        }
-       
-        // Calculate Vertical Centering
-        // We center the "content block" within the available space between top and footer
-        const availableVerticalSpace = height - topPadding - footerHeight;
-        const startY = topPadding + (availableVerticalSpace - totalContentHeight) / 2;
-
-        // Draw Accent Line (vertical red line on left)
-        const accentX = padding - 40;
-        const accentHeight = totalContentHeight;
+        // Draw accent line
+        const accentStartY = startY - 40;
+        const accentHeight = totalContentHeight + 80;
         ctx.fillStyle = '#8b4c42';
-        ctx.fillRect(accentX, startY, 6, accentHeight);
+        ctx.fillRect(80, accentStartY, 6, accentHeight);
 
-        // Draw Quote Text
-        ctx.fillStyle = '#e8e6e3';
-        ctx.font = `italic ${fontSize}px Georgia, serif`;
+        // Draw quote text
         ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
+        ctx.textBaseline = 'alphabetic';
         
-        let currentY = startY;
+        const startX = 120;
+        let currentY = startY + 42; 
+        
         quoteLines.forEach((line) => {
-            ctx.fillText(line, padding, currentY);
-            currentY += (fontSize * lineHeightMultiplier);
+            let currentX = startX;
+            line.forEach(token => {
+                ctx.fillStyle = '#e8e6e3';
+                // Switch font based on the token's style
+                ctx.font = token.isItalic ? italicFont : normalFont;
+                ctx.fillText(token.text, currentX, currentY);
+                currentX += token.width;
+            });
+            currentY += lineHeight;
         });
 
-        // Draw Attribution
-        // Positioned relative to end of quote
-        const attributionY = startY + quoteBlockHeight + (spacingBetween / 2); 
+        // Attribution
+        let attribY = startY + quoteHeight + spacingBetween;
         ctx.fillStyle = '#b8b5b2';
-        ctx.font = `${attributionFontSize}px Georgia, serif`;
+        ctx.font = '32px Georgia, serif';
         ctx.textAlign = 'right';
-        ctx.fillText(sourceText, width - padding, attributionY);
+        ctx.fillText(sourceText, canvas.width - 120, attribY);
 
-        // Draw Footer
+        // Footer
         ctx.fillStyle = '#666';
         ctx.font = '22px Georgia, serif';
         ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText("David Kendall Casey's Commonplace Book", width / 2, height - 30);
+        ctx.fillText("David Kendall Casey's Commonplace Book", canvas.width / 2, canvas.height - 60);
 
         return new Promise((resolve) => {
             canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
