@@ -149,6 +149,29 @@ blockquote p:last-child {
     margin-bottom: 0;
 }
 
+/* Two-line drop cap for the daily selection */
+#quote-text::first-letter {
+    -webkit-initial-letter: 2; /* Required for Safari */
+    initial-letter: 2;         /* Locks height to exactly 2 lines */
+    color: #8b4c42;            /* Site accent color */
+    font-weight: 700;
+    margin-right: 0.5rem;
+    padding-top: 0.1em;        /* Prevents clipping on some mobile browsers */
+}
+
+/* Robust fallback for browsers that do not yet support initial-letter */
+@supports not (initial-letter: 2) {
+    #quote-text::first-letter {
+        float: left;
+        font-size: 3.2em;      /* Scaled to match 2 lines of 1.35em text */
+        line-height: 0.85;     /* Tightened to align top with the first line */
+        margin-top: 0.1em;
+        margin-right: 0.4rem;
+        color: #8b4c42;
+        font-weight: 700;
+    }
+}
+
 /* For poetry or special formatting with line breaks */
 blockquote p br {
     line-height: inherit; /* Maintain consistent line spacing */
