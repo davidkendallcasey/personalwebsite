@@ -149,6 +149,13 @@ blockquote p:last-child {
     margin-bottom: 0;
 }
 
+/* Custom text highlight using the site's accent color */
+.highlight-text {
+    color: #8b4c42;
+    font-weight: normal;
+    font-style: normal; /* Optional: removes italics if the rest of the quote is italicized */
+}
+
 /* Two-line drop cap for the daily selection */
 #quote-text::first-letter {
     -webkit-initial-letter: 2; /* Required for Safari */
