@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>David Kendall Casey</title>
   <link rel="stylesheet" href="stylesheet.css">
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-  >
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  
+  <meta property="og:title" content="David Kendall Casey - Commonplace Book">
+  <meta property="og:description" content="A curated collection of impactful quotes.">
+  <meta property="og:image" content="https://davidkendallcasey.github.io/personalwebsite/images/DKC.png">
+  <meta property="og:url" content="https://davidkendallcasey.github.io/personalwebsite/">
+  <meta property="og:type" content="website">
+
   <style>
     /* Audio player button styles */
     #play-button {
@@ -75,8 +80,8 @@
   <nav>
     <a href="index.html">Home</a>
     <a href="commonplace.html">Index</a>
-	<a href="cv.html">CV</a>
-	<a href="projects.html">Projects</a>
+    <a href="cv.html">CV</a>
+    <a href="projects.html">Projects</a>
   </nav>
 
   <main class="container">
@@ -213,7 +218,7 @@
           }
           localStorage.setItem('quoteHistory', JSON.stringify(quoteHistory));
           
-          // Store as today's quote (unless just shuffling for fun, but we'll store it anyway)
+          // Store as today's quote
           const payload = { 
             date: today, 
             quoteHTML, 
@@ -248,7 +253,6 @@
           ${title}
          </a>`;
 
-      // FIX: Manually trigger the Share Button addition now that the content exists
       if (window.quoteSharer) {
         window.quoteSharer.addShareButtons();
       }
@@ -262,10 +266,10 @@
       const voices = speechSynthesis.getVoices();
       if (voices.length === 0) return null;
       
-      // Priority 1: "Google" voices (High quality, available in Chrome/Android)
+      // Priority 1: "Google" voices
       let voice = voices.find(v => v.name === 'Google UK English Male');
       
-      // Priority 2: Voices marked as "Natural" or "Enhanced" (Edge/Safari)
+      // Priority 2: Voices marked as "Natural" or "Enhanced"
       if (!voice) {
         voice = voices.find(v => 
           v.lang.startsWith('en') && 
@@ -273,7 +277,7 @@
         );
       }
 
-      // Priority 3: Specific high-quality OS voices (macOS/iOS "Daniel", etc.)
+      // Priority 3: Specific high-quality OS voices
       if (!voice) {
         voice = voices.find(v => 
           (v.lang.includes('en-GB') || v.lang.includes('en-UK')) && 
@@ -316,7 +320,6 @@
 
       const quoteText = document.getElementById('quote-text').innerText || '';
       const sourceText = document.getElementById('quote-source').innerText || '';
-      // Add a pause between quote and source using punctuation
       const fullText = quoteText + '... ... ' + sourceText;
 
       if (!fullText.trim()) {
@@ -335,9 +338,8 @@
         currentUtterance.voice = selectedVoice;
       }
       
-      // Optimization: Closer to 1.0 reduces robotic artifacts
-      currentUtterance.rate = 0.95; // Slightly slower than normal, but faster than 0.85
-      currentUtterance.pitch = 1.0; // Natural pitch (altering pitch often sounds artificial)
+      currentUtterance.rate = 0.95; 
+      currentUtterance.pitch = 1.0; 
       currentUtterance.volume = 1.0;
 
       currentUtterance.onstart = function() {
@@ -354,9 +356,6 @@
         console.error('Speech error:', event.error);
         isPlaying = false;
         resetButton();
-        if (event.error !== 'interrupted') {
-          // Silent fail for user experience, log to console
-        }
       };
 
       speechSynthesis.speak(currentUtterance);
@@ -404,7 +403,6 @@
 
   <script src="add-quote-ids.js"></script>
   <script src="dynamic-search.js"></script>
-  
   <script src="share-quote.js"></script>
 </body>
 </html>
