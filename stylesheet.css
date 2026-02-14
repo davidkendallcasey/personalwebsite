@@ -37,7 +37,6 @@ header {
 
 header h1 {
     font-family: 'DM Serif Display', serif;
-    font-style: italic;
     font-size: 3.2em; /* Increased from 2.9em */
     font-weight: 400;
     margin: 0;
