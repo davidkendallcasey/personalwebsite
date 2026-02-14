@@ -1,8 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Neuton:ital,wght@0,200;0,300;0,400;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Neuton:ital,wght@0,200;0,300;0,400;0,700;0,800;1,400&display=swap');
+
 /* General Styles */
 html {
     scroll-behavior: smooth;
 }
+
 body::before {
     content: "";
     position: fixed;
@@ -15,6 +17,7 @@ body::before {
     opacity: 0.04; /* Very subtle texture */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
+
 body {
     font-family: Neuton, Georgia, sans-serif, monospace;
     line-height: 1.8;
@@ -33,18 +36,18 @@ header {
 }
 
 header h1 {
-	font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'DM Serif Display', serif;
     font-style: italic;
     font-size: 3.2em; /* Increased from 2.9em */
-	font-weight: 600;
+    font-weight: 400;
     margin: 0;
     color: #f5f3f0; /* Slightly warmer white for headings */
-	letter-spacing: 0.05em;
+    letter-spacing: 0.05em;
 }
 
 .subtitle {
-    font-family: 'Playfair Display', Georgia, serif;
-	font-size: 2.3em; /* Increased from 2.1em */
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.3em; /* Increased from 2.1em */
     color: #b8b5b2; /* Muted color for subtitle */
     margin: 0.5rem 0 0 0;
 }
@@ -80,8 +83,8 @@ nav a:hover {
 }
 
 h2 {
-    font-family: 'Playfair Display', Georgia, serif;
-	color: #f5f3f0;
+    font-family: 'DM Serif Display', serif;
+    color: #f5f3f0;
     border-bottom: 2px solid #8b4c42; /* Darker, more muted red */
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
@@ -96,21 +99,6 @@ h2 {
     border-radius: 8px;
     border-left: 4px solid #8b4c42; /* Matching muted red accent */
     transition: background-color 0.5s ease, border-left-color 0.5s ease;
-}
-
-/* Drop Cap Style - RESTRICTED TO DAILY QUOTE ONLY */
-#quote-of-the-day blockquote > p:first-child::first-letter,
-#quote-of-the-day blockquote::first-letter {
-    float: left;
-    font-family: 'Playfair Display', serif;
-    font-size: 3.8em;
-    line-height: 0.65;
-    padding-top: 0.1em;
-    padding-right: 0.1em;
-    padding-left: 0;
-    color: #8b4c42;
-    font-style: normal;
-    margin-right: 6px;
 }
 
 /* Highlight targeted quote from search results */
@@ -154,29 +142,6 @@ blockquote p:last-child {
     color: #8b4c42;
     font-weight: normal;
     font-style: normal; /* Optional: removes italics if the rest of the quote is italicized */
-}
-
-/* Two-line drop cap for the daily selection */
-#quote-text::first-letter {
-    -webkit-initial-letter: 2; /* Required for Safari */
-    initial-letter: 2;         /* Locks height to exactly 2 lines */
-    color: #8b4c42;            /* Site accent color */
-    font-weight: 700;
-    margin-right: 0.5rem;
-    padding-top: 0.1em;        /* Prevents clipping on some mobile browsers */
-}
-
-/* Robust fallback for browsers that do not yet support initial-letter */
-@supports not (initial-letter: 2) {
-    #quote-text::first-letter {
-        float: left;
-        font-size: 3.2em;      /* Scaled to match 2 lines of 1.35em text */
-        line-height: 0.85;     /* Tightened to align top with the first line */
-        margin-top: 0.1em;
-        margin-right: 0.4rem;
-        color: #8b4c42;
-        font-weight: 700;
-    }
 }
 
 /* For poetry or special formatting with line breaks */
@@ -235,7 +200,6 @@ hr.divider {
     left: 0;
     width: 100%;
     height: 100%;
-    /* CHANGED: Uses #8b4c42 (Accent Color) instead of #444 (Gray) */
     background-image: linear-gradient(to right, transparent, #8b4c42, transparent);
     
     /* The Mask: Cuts the hole in the center */
