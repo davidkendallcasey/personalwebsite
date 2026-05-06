@@ -214,19 +214,35 @@
     /* ---------- Speech synthesis ---------------------------------- */
 
     function pickVoice() {
-      const voices = speechSynthesis.getVoices();
-      if (!voices.length) return null;
-      const preferences = [
-        v => v.lang.startsWith('en') && /natural|neural|enhanced|premium/i.test(v.name),
-        v => v.lang.startsWith('en-US') || v.lang.startsWith('en-GB'),
-        v => v.lang.startsWith('en'),
-      ];
-      for (const pref of preferences) {
-        const match = voices.find(pref);
-        if (match) return match;
-      }
-      return voices[0] || null;
-    }
+  const voices = speechSynthesis.getVoices();
+  if (!voices.length) return null;
+
+  // British voice names that ship with major browsers/OSes
+  const britishNames = /\b(Hazel|George|Susan|Kate|Daniel|Serena|Oliver|Libby|Sonia|Ryan|Thomas|UK English|British)\b/i;
+
+  // Tier 1: neural/natural British
+  const neuralBritish = voices.find(v =>
+    v.lang.startsWith('en-GB') && /natural|neural|enhanced|premium|online/i.test(v.name)
+  );
+  if (neuralBritish) return neuralBritish;
+
+  // Tier 2: any en-GB voice
+  const anyBritish = voices.find(v => v.lang.startsWith('en-GB'));
+  if (anyBritish) return anyBritish;
+
+  // Tier 3: voice with a British name even if lang isn't tagged en-GB
+  const britishByName = voices.find(v => britishNames.test(v.name));
+  if (britishByName) return britishByName;
+
+  // Tier 4: any neural English
+  const neuralEnglish = voices.find(v =>
+    v.lang.startsWith('en') && /natural|neural|enhanced|premium|online/i.test(v.name)
+  );
+  if (neuralEnglish) return neuralEnglish;
+
+  // Tier 5: any English
+  return voices.find(v => v.lang.startsWith('en')) || voices[0];
+}
 
     function setupVoices() {
       selectedVoice = pickVoice();
