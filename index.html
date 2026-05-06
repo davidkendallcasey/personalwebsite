@@ -4,406 +4,286 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>David Kendall Casey</title>
+  <meta name="description" content="The personal website and commonplace book of David Kendall Casey.">
+  <link rel="canonical" href="https://davidkendallcasey.github.io/personalwebsite/">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="stylesheet.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  
-  <meta property="og:title" content="David Kendall Casey - Commonplace Book">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="David Kendall Casey — Commonplace Book">
   <meta property="og:description" content="A curated collection of impactful quotes.">
   <meta property="og:image" content="https://davidkendallcasey.github.io/personalwebsite/images/DKC.png">
   <meta property="og:url" content="https://davidkendallcasey.github.io/personalwebsite/">
   <meta property="og:type" content="website">
-
-  <style>
-    /* Audio player button styles */
-    #play-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #444;
-      color: #e8e6e3;
-      border: none;
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      margin-left: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      vertical-align: middle;
-      font-size: 1.2em;
-    }
-    #play-button:hover {
-      background: #555;
-      transform: scale(1.05);
-    }
-    #play-button.playing {
-      background: #8b4c42;
-    }
-    .quote-attribution {
-      display: flex;
-      align-items: center;
-      margin-top: 1rem;
-      font-style: italic;
-    }
-    
-    /* Override the daily quote specific styles to match quote-entry formatting */
-    #quote-of-the-day {
-      font-size: inherit; /* Use the base font size from quote-entry class */
-      line-height: inherit;
-    }
-    
-    #quote-header {
-      color: #b8b5b2;
-      font-size: 1.1em;
-      margin-bottom: 1rem;
-    }
-    .divider {
-      width: 20%;
-      margin: 50px auto;
-      border: none;
-      height: 0.5px;
-      background-color: #8b4c42;
-    }
-    /* Center the Daily Selection heading */
-    .daily-selection-heading {
-      text-align: center;
-      margin: 30px 0;
-    }
-  </style>
+  <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to content</a>
+
   <header>
     <h1>David Kendall Casey</h1>
-    <h3 class="subtitle">Commonplace Book</h3>
+    <p class="subtitle">Commonplace Book</p>
   </header>
 
   <nav>
-    <a href="index.html">Home</a>
+    <a href="index.html" class="current-page">Home</a>
     <a href="commonplace.html">Index</a>
-	<a href="reading-lists.html">Lists</a> 
+    <a href="reading-lists.html">Lists</a>
     <a href="cv.html">CV</a>
     <a href="projects.html">Projects</a>
   </nav>
 
-  <main class="container">
-   <h2 class="daily-selection-heading">
-        Daily Selection
-        <button onclick="refreshQuote()" title="Shuffle Quote" style="background:none; border:none; cursor:pointer; color:#8b4c42; font-size:0.7em; vertical-align: middle; margin-left: 10px; transition: transform 0.5s ease;">
-            <i id="refresh-icon" class="fas fa-sync-alt"></i>
-        </button>
+  <main id="main" class="container">
+    <h2 class="daily-selection-heading">
+      Daily Selection
+      <button id="refresh-button" type="button" aria-label="Shuffle to a new quote">
+        <i id="refresh-icon" class="fas fa-sync-alt" aria-hidden="true"></i>
+      </button>
     </h2>
-    
-    <div id="quote-of-the-day" class="quote-entry">
+
+    <div id="quote-of-the-day" class="quote-entry" aria-live="polite">
       <p id="quote-header"></p>
       <blockquote id="quote-text"></blockquote>
       <div class="quote-attribution">
         <p id="quote-source"></p>
-        <button id="play-button" title="Listen to quote">
-          <i id="play-icon" class="fas fa-play"></i>
+        <button id="play-button" type="button" aria-label="Listen to quote">
+          <i id="play-icon" class="fas fa-play" aria-hidden="true"></i>
         </button>
       </div>
     </div>
+
     <hr class="divider">
 
     <div class="disclaimer">
-        <p><i>Disclaimer: The quotes and passages compiled here are for educational and contemplative purposes. Their inclusion does not imply endorsement of the content, views, or opinions by David Kendall Casey, who maintains this Commonplace Book.</i></p>
+      <p><i>Disclaimer: The quotes and passages compiled here are for educational and contemplative purposes.
+      Their inclusion does not imply endorsement of the content, views, or opinions by David Kendall Casey,
+      who maintains this Commonplace Book.</i></p>
     </div>
-
   </main>
 
   <script>
-    // Simple variables to track state
+  /* ===================================================================
+     Daily Selection
+     - Reads from quotes.json (built by build-quotes.js)
+     - Falls back to scraping commonplace.html if quotes.json is absent
+     - Caches today's pick in localStorage; remembers last 50 IDs
+     =================================================================== */
+  (() => {
+    'use strict';
+
+    const HISTORY_KEY = 'quoteHistory';
+    const CACHE_KEY   = 'dailyQuote';
+    const MAX_HISTORY = 50;
+
+    let fetchToken = 0;            // race-condition guard
     let isPlaying = false;
     let currentUtterance = null;
+    let selectedVoice = null;
 
-    // Automatically discover pages from commonplace.html
-    async function getQuotePages() {
+    const todayISO = () => new Date().toISOString().split('T')[0];
+
+    const safeParse = (v, fallback) => {
+      try { return JSON.parse(v) ?? fallback; } catch { return fallback; }
+    };
+
+    /* ---------- Quote loading ------------------------------------- */
+
+    async function loadAllQuotes() {
+      // Primary path: quotes.json
       try {
-        const response = await fetch('commonplace.html');
-        const html = await response.text();
+        const res = await fetch('quotes.json', { cache: 'default' });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length) return data;
+        }
+      } catch (err) {
+        console.warn('quotes.json not available, falling back to live scrape:', err);
+      }
+
+      // Fallback path: discover pages from commonplace.html and scrape them
+      return scrapeQuotesFromCommonplace();
+    }
+
+    async function scrapeQuotesFromCommonplace() {
+      let pages = [];
+      try {
+        const res = await fetch('commonplace.html');
+        const html = await res.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
-        
-        const links = doc.querySelectorAll('.category-link');
-        const pages = Array.from(links)
-          .map(link => link.getAttribute('href'))
+        pages = Array.from(doc.querySelectorAll('.category-link'))
+          .map(a => a.getAttribute('href'))
           .filter(href => href && href.endsWith('.html') && href.startsWith('on-'));
-        
-        return pages;
-      } catch (error) {
-        console.error('Could not load commonplace.html, using fallback pages:', error);
-        return [
-          'on-animals.html','on-art-and-creativity.html','on-age.html',
-          'on-beauty.html','on-benevolence.html','on-crime-and-punishment.html',
-          'on-culture-and-politics.html','on-existence.html','on-death.html',
-          'on-education.html','on-freedom.html','on-friendship.html','on-greatness.html',
-          'on-hate.html','on-health-illness-medicine.html','on-history.html','on-morality.html',
-          'on-hope.html','on-introversion.html','on-joy.html',
-          'on-language.html','on-love.html','on-manners.html',
-          'on-justice-and-mercy.html','on-mind.html','on-money-and-wealth.html','on-observation.html',
-          'on-the-past.html','on-philosophy.html','on-race-and-racism.html',
-          'on-reading.html','on-the-sublime.html','on-suffering.html',
-          'on-technology.html','on-truth-and-knowledge.html',
-          'on-war-and-violence.html','on-work.html','on-writing.html'
-        ];
-      }
-    }
-
-    // Feature: Manual Refresh
-    function refreshQuote() {
-        const icon = document.getElementById('refresh-icon');
-        if (icon) icon.style.transform = 'rotate(360deg)';
-        // Force a new quote by passing 'true'
-        displayDailyQuote(true);
-        // Reset rotation animation
-        setTimeout(() => { if(icon) icon.style.transform = 'none'; }, 500);
-    }
-
-    // Load and display daily quote (accepts forceRefresh parameter)
-    async function displayDailyQuote(forceRefresh = false) {
-      const pages = await getQuotePages();
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Only check cache if we aren't forcing a refresh
-      if (!forceRefresh) {
-          let stored = JSON.parse(localStorage.getItem('dailyQuote')||'{}');
-          if (stored.date === today) {
-            displayQuote(stored.quoteHTML, stored.sourceText, stored.pageName, stored.pageURL);
-            return;
-          }
+      } catch (err) {
+        console.error('Could not load commonplace.html:', err);
+        return [];
       }
 
-      // Get quote history
-      let quoteHistory = JSON.parse(localStorage.getItem('quoteHistory') || '[]');
-      const maxHistorySize = 50;
-      
-      let attempts = 0;
-      let maxAttempts = 20;
-      let selectedQuote = null;
+      // Fetch all in parallel; tolerate failures
+      const results = await Promise.allSettled(pages.map(p => fetch(p).then(r => r.text()).then(t => ({ page: p, html: t }))));
+      const all = [];
 
-      while (!selectedQuote && attempts < maxAttempts) {
-        attempts++;
-        const page = pages[Math.floor(Math.random() * pages.length)];
-        
-        try {
-          const res = await fetch(page);
-          const txt = await res.text();
-          const doc = new DOMParser().parseFromString(txt, 'text/html');
-          const list = doc.querySelectorAll('.quote-entry');
-          
-          if (!list.length) continue;
-          
-          const candidates = Array.from(list).map((entry, index) => {
-            const quoteText = entry.querySelector('blockquote').innerText.trim();
-            const quoteId = `${page}-${index}-${quoteText.substring(0, 50)}`;
-            return { entry, quoteId, page };
-          });
-          
-          const availableQuotes = candidates.filter(candidate => 
-            !quoteHistory.includes(candidate.quoteId)
-          );
-          
-          if (availableQuotes.length === 0) continue;
-          
-          const selected = availableQuotes[Math.floor(Math.random() * availableQuotes.length)];
-          const entry = selected.entry;
-          const quoteHTML = entry.querySelector('blockquote').innerHTML;
+      for (const r of results) {
+        if (r.status !== 'fulfilled') continue;
+        const { page, html } = r.value;
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const entries = doc.querySelectorAll('.quote-entry');
+        const titleSlug = page.replace(/\.html$/, '').replace(/^on-/, '').replace(/-/g, ' ');
+        const pageTitle = 'On ' + titleSlug.replace(/\b\w/g, c => c.toUpperCase());
+
+        entries.forEach((entry, i) => {
+          const blockquote = entry.querySelector('blockquote');
+          if (!blockquote) return;
+          const quoteHTML = blockquote.innerHTML.trim();
           const srcEl = entry.querySelector('.source');
           const sourceText = srcEl ? srcEl.textContent.trim() : 'Unknown Source';
-          const name = page.replace(/\.html$/, '').replace(/-/g, ' ');
-          const title = name.charAt(0).toUpperCase() + name.slice(1);
-          
-          // Update history
-          quoteHistory.unshift(selected.quoteId);
-          if (quoteHistory.length > maxHistorySize) {
-            quoteHistory = quoteHistory.slice(0, maxHistorySize);
-          }
-          localStorage.setItem('quoteHistory', JSON.stringify(quoteHistory));
-          
-          // Store as today's quote
-          const payload = { 
-            date: today, 
-            quoteHTML, 
-            sourceText, 
-            pageName: title, 
-            pageURL: page,
-            quoteId: selected.quoteId
-          };
-          localStorage.setItem('dailyQuote', JSON.stringify(payload));
-          
-          selectedQuote = { quoteHTML, sourceText, title, page };
-          
-        } catch(e) {
-          console.error(`Error loading ${page}:`, e);
-        }
+          const id = `${page}#${i}`;
+          all.push({ id, page, pageTitle, quoteHTML, sourceText });
+        });
       }
-      
-      if (selectedQuote) {
-        displayQuote(selectedQuote.quoteHTML, selectedQuote.sourceText, selectedQuote.title, selectedQuote.page);
-      }
+      return all;
     }
 
-    function displayQuote(html, src, title, url) {
-      document.getElementById('quote-text').innerHTML = html;
-      
-      const sourceElement = document.getElementById('quote-source');
-      sourceElement.innerHTML = `— ${src}`;
-      sourceElement.className = 'source'; 
-      
-      document.getElementById('quote-header').innerHTML =
-        `From: <a href="${url}" target="_blank" style="color:inherit;text-decoration:none;">
-          ${title}
-         </a>`;
+    /* ---------- Selection logic ----------------------------------- */
 
-      if (window.quoteSharer) {
+    function pickQuote(all) {
+      const history = safeParse(localStorage.getItem(HISTORY_KEY), []);
+      const pool = all.filter(q => !history.includes(q.id));
+      const source = pool.length ? pool : all;
+      return source[Math.floor(Math.random() * source.length)];
+    }
+
+    function recordHistory(id) {
+      const history = safeParse(localStorage.getItem(HISTORY_KEY), []);
+      const next = [id, ...history.filter(x => x !== id)].slice(0, MAX_HISTORY);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+    }
+
+    /* ---------- Render -------------------------------------------- */
+
+    function displayQuote(q) {
+      document.getElementById('quote-text').innerHTML = q.quoteHTML;
+
+      const srcEl = document.getElementById('quote-source');
+      srcEl.innerHTML = `— ${q.sourceText}`;
+      srcEl.className = 'source';
+
+      document.getElementById('quote-header').innerHTML =
+        `From: <a href="${q.page}" style="color:inherit;text-decoration:none;">${q.pageTitle}</a>`;
+
+      if (window.quoteSharer && typeof window.quoteSharer.addShareButtons === 'function') {
         window.quoteSharer.addShareButtons();
       }
     }
 
-    // Voice selection - Optimized for Natural/Neural voices
-    let selectedVoice = null;
-    let voicesLoaded = false;
+    async function displayDailyQuote(forceRefresh = false) {
+      const myToken = ++fetchToken;
+      const today = todayISO();
 
-    function loadVoices() {
-      const voices = speechSynthesis.getVoices();
-      if (voices.length === 0) return null;
-      
-      // Priority 1: "Google" voices
-      let voice = voices.find(v => v.name === 'Google UK English Male');
-      
-      // Priority 2: Voices marked as "Natural" or "Enhanced"
-      if (!voice) {
-        voice = voices.find(v => 
-          v.lang.startsWith('en') && 
-          (v.name.includes('Natural') || v.name.includes('Enhanced') || v.name.includes('Premium'))
-        );
+      if (!forceRefresh) {
+        const cached = safeParse(localStorage.getItem(CACHE_KEY), null);
+        if (cached && cached.date === today) {
+          displayQuote(cached.quote);
+          return;
+        }
       }
 
-      // Priority 3: Specific high-quality OS voices
-      if (!voice) {
-        voice = voices.find(v => 
-          (v.lang.includes('en-GB') || v.lang.includes('en-UK')) && 
-          (v.name.includes('Daniel') || v.name.includes('Arthur') || v.name.includes('Martha'))
-        );
-      }
-      
-      // Priority 4: Any English voice starting with "Google"
-      if (!voice) {
-         voice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google'));
-      }
-      
-      // Fallback: First available English voice
-      if (!voice) {
-        voice = voices.find(v => v.lang.startsWith('en'));
-      }
-      
-      if (voice) {
-        console.log('Selected voice:', voice.name, '(' + voice.lang + ')');
-      }
-      
-      return voice;
+      const all = await loadAllQuotes();
+      if (myToken !== fetchToken) return;        // a newer call superseded us
+      if (!all.length) return;
+
+      const picked = pickQuote(all);
+      recordHistory(picked.id);
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ date: today, quote: picked }));
+      displayQuote(picked);
     }
 
-    // Load voices when available
-    speechSynthesis.onvoiceschanged = function() {
-      if (!voicesLoaded) {
-        selectedVoice = loadVoices();
-        voicesLoaded = true;
-      }
-    };
+    /* ---------- Refresh button ------------------------------------ */
 
-    // Enhanced speech function
-    function readQuote() {
+    function refreshQuote() {
+      const icon = document.getElementById('refresh-icon');
+      if (icon) icon.style.transform = 'rotate(360deg)';
+      displayDailyQuote(true);
+      setTimeout(() => { if (icon) icon.style.transform = 'none'; }, 500);
+    }
+
+    /* ---------- Speech synthesis ---------------------------------- */
+
+    function pickVoice() {
+      const voices = speechSynthesis.getVoices();
+      if (!voices.length) return null;
+      const preferences = [
+        v => v.lang.startsWith('en') && /natural|neural|enhanced|premium/i.test(v.name),
+        v => v.lang.startsWith('en-US') || v.lang.startsWith('en-GB'),
+        v => v.lang.startsWith('en'),
+      ];
+      for (const pref of preferences) {
+        const match = voices.find(pref);
+        if (match) return match;
+      }
+      return voices[0] || null;
+    }
+
+    function setupVoices() {
+      selectedVoice = pickVoice();
+      if (!selectedVoice && 'onvoiceschanged' in speechSynthesis) {
+        speechSynthesis.addEventListener('voiceschanged', () => {
+          selectedVoice = pickVoice();
+        }, { once: true });
+      }
+    }
+
+    function togglePlay() {
+      const btn = document.getElementById('play-button');
+      const icon = document.getElementById('play-icon');
+      if (!('speechSynthesis' in window)) {
+        console.warn('Speech synthesis not supported');
+        return;
+      }
+
       if (isPlaying) {
         speechSynthesis.cancel();
-        resetButton();
+        isPlaying = false;
+        btn.classList.remove('playing');
+        btn.setAttribute('aria-label', 'Listen to quote');
+        icon.className = 'fas fa-play';
         return;
       }
 
-      const quoteText = document.getElementById('quote-text').innerText || '';
-      const sourceText = document.getElementById('quote-source').innerText || '';
-      const fullText = quoteText + '... ... ' + sourceText;
+      const text = document.getElementById('quote-text').innerText.trim();
+      if (!text) return;
 
-      if (!fullText.trim()) {
-        alert('No text to read');
-        return;
-      }
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      if (selectedVoice) currentUtterance.voice = selectedVoice;
+      currentUtterance.rate = 0.95;
 
-      if (!voicesLoaded) {
-        selectedVoice = loadVoices();
-        voicesLoaded = true;
-      }
-
-      currentUtterance = new SpeechSynthesisUtterance(fullText);
-      
-      if (selectedVoice) {
-        currentUtterance.voice = selectedVoice;
-      }
-      
-      currentUtterance.rate = 0.95; 
-      currentUtterance.pitch = 1.0; 
-      currentUtterance.volume = 1.0;
-
-      currentUtterance.onstart = function() {
-        isPlaying = true;
-        updateButton(true);
-      };
-
-      currentUtterance.onend = function() {
+      currentUtterance.onend = currentUtterance.onerror = () => {
         isPlaying = false;
-        resetButton();
-      };
-
-      currentUtterance.onerror = function(event) {
-        console.error('Speech error:', event.error);
-        isPlaying = false;
-        resetButton();
+        btn.classList.remove('playing');
+        btn.setAttribute('aria-label', 'Listen to quote');
+        icon.className = 'fas fa-play';
       };
 
       speechSynthesis.speak(currentUtterance);
+      isPlaying = true;
+      btn.classList.add('playing');
+      btn.setAttribute('aria-label', 'Stop reading');
+      icon.className = 'fas fa-stop';
     }
 
-    function updateButton(playing) {
-      const button = document.getElementById('play-button');
-      const icon = document.getElementById('play-icon');
-      
-      if (playing) {
-        icon.className = 'fas fa-pause';
-        button.classList.add('playing');
-        button.title = 'Stop reading';
-      } else {
-        icon.className = 'fas fa-play';
-        button.classList.remove('playing');
-        button.title = 'Listen to quote';
-      }
-    }
+    /* ---------- Boot ---------------------------------------------- */
 
-    function resetButton() {
-      updateButton(false);
-      currentUtterance = null;
-      isPlaying = false;
-    }
-
-    // Initialize everything
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('refresh-button').addEventListener('click', refreshQuote);
+      document.getElementById('play-button').addEventListener('click', togglePlay);
+      setupVoices();
       displayDailyQuote();
-      
-      const playButton = document.getElementById('play-button');
-      if (playButton) {
-        playButton.addEventListener('click', readQuote);
-      }
     });
-
-    // Stop speech if page becomes hidden
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden && isPlaying) {
-        speechSynthesis.cancel();
-        resetButton();
-      }
-    });
+  })();
   </script>
-
-  <script src="add-quote-ids.js"></script>
-  <script src="dynamic-search.js"></script>
-  <script src="share-quote.js"></script>
 </body>
 </html>
