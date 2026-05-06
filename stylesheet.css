@@ -393,8 +393,11 @@ span.work-title,
 /* --- Daily quote (index page) --------------------------------------- */
 #quote-of-the-day {
     margin-bottom: 2rem;
-    font-size: 1.3em;
+    font-size: 1em;
     line-height: 1.5;
+}
+#quote-of-the-day blockquote {
+    font-size: 1.15em;     
 }
 
 #quote-header {
