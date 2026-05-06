@@ -1,80 +1,122 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Neuton:ital,wght@0,200;0,300;0,400;0,700;0,800;1,400&display=swap');
 
-/* General Styles */
+/* =====================================================================
+   David Kendall Casey — Commonplace Book
+   Stylesheet
+   ===================================================================== */
+
+/* --- Design tokens (used selectively; existing values preserved) ----- */
+:root {
+    --bg:         #1a1a1a;
+    --bg-soft:    #222;
+    --bg-card:    #242424;
+    --fg:         #e8e6e3;
+    --fg-strong:  #f5f3f0;
+    --fg-muted:   #b8b5b2;
+    --fg-link:    #d4d1ce;
+    --fg-faint:   #a8a8a8;       /* upgraded from #888 for contrast */
+    --rule:       #444;
+    --accent:     #8b4c42;
+    --accent-2:   #b8654a;
+    --accent-dk:  #6b3426;
+}
+
+/* --- Base ------------------------------------------------------------ */
 html {
     scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Neuton', Georgia, 'Times New Roman', serif;
+    line-height: 1.8;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg);
+    color: var(--fg);
+    font-size: 120%;
 }
 
 body::before {
     content: "";
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     pointer-events: none;
     z-index: -1;
-    opacity: 0.04; /* Very subtle texture */
+    opacity: 0.04;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
-body {
-    font-family: Neuton, Georgia, sans-serif, monospace;
-    line-height: 1.8;
-    margin: 0;
-    padding: 0;
-    background-color: #1a1a1a; /* Softer than pure black */
-    color: #e8e6e3; /* Warm off-white instead of stark white */
-    font-size: 120%; /* Increased from 100% - this is the main change */
+/* --- Skip link (accessibility) --------------------------------------- */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 10000;
+    background: var(--accent);
+    color: #fff;
+    padding: 0.6rem 1rem;
+    text-decoration: none;
+    border-radius: 4px;
+}
+.skip-link:focus {
+    left: 1rem;
+    top: 1rem;
 }
 
-/* Header Styles */
+/* --- Header ---------------------------------------------------------- */
 header {
     text-align: center;
     padding: 2rem 1rem;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--rule);
 }
 
 header h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: 3.2em; /* Increased from 2.9em */
+    font-size: 3.2em;
     font-weight: 400;
     margin: 0;
-    color: #f5f3f0; /* Slightly warmer white for headings */
+    color: var(--fg-strong);
     letter-spacing: 0.05em;
 }
 
 .subtitle {
     font-family: 'DM Serif Display', serif;
-    font-size: 2.3em; /* Increased from 2.1em */
-    color: #b8b5b2; /* Muted color for subtitle */
+    font-size: 2.3em;
+    color: var(--fg-muted);
     margin: 0.5rem 0 0 0;
 }
 
-/* Navigation */
+/* --- Navigation ------------------------------------------------------ */
 nav {
     text-align: center;
     padding: 2rem;
-    background-color: #222;
-    border-bottom: 1px solid #444;
+    background-color: var(--bg-soft);
+    border-bottom: 1px solid var(--rule);
 }
 
 nav a {
-    color: #d4d1ce; /* Softer link color */
+    color: var(--fg-link);
     text-decoration: none;
     margin: 0 1rem;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: all 0.3s ease;
-    font-size: 1.5em; /* Increased from 1.4em */
+    font-size: 1.5em;
 }
 
 nav a:hover {
     background-color: #333;
-    color: #f5f3f0;
+    color: var(--fg-strong);
 }
 
-/* Main Content */
+nav a.current-page {
+    color: var(--fg-strong);
+    background-color: #333;
+    border-bottom: 2px solid var(--accent);
+    border-radius: 4px 4px 0 0;
+}
+
+/* --- Main content container ----------------------------------------- */
 .container {
     max-width: 800px;
     margin: 0 auto;
@@ -83,148 +125,138 @@ nav a:hover {
 
 h2 {
     font-family: 'DM Serif Display', serif;
-    color: #f5f3f0;
-    border-bottom: 2px solid #8b4c42; /* Darker, more muted red */
+    color: var(--fg-strong);
+    border-bottom: 2px solid var(--accent);
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
-    font-size: 2.1em; /* Increased from 1.9em */
+    font-size: 2.1em;
 }
 
-/* Quote Styles */
+/* --- Quote entries --------------------------------------------------- */
 .quote-entry {
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background-color: #242424; /* Subtle background for quotes */
+    background-color: var(--bg-card);
     border-radius: 8px;
-    border-left: 4px solid #8b4c42; /* Matching muted red accent */
+    border-left: 4px solid var(--accent);
     transition: background-color 0.5s ease, border-left-color 0.5s ease;
 }
 
-/* Highlight targeted quote from search results */
 .quote-entry:target {
     background-color: #2a2520;
-    border-left-color: #b8654a;
+    border-left-color: var(--accent-2);
     animation: highlight-pulse 1.5s ease-out;
 }
 
 @keyframes highlight-pulse {
-    0%, 100% {
-        background-color: #2a2520;
-    }
-    50% {
-        background-color: #3a3025;
-    }
+    0%, 100% { background-color: #2a2520; }
+    50%      { background-color: #3a3025; }
 }
 
 blockquote {
-    font-size: 1.35em; /* Increased from 1.2em - this is crucial for readability */
-    line-height: 1.5; /* Slightly tighter line height to compensate for larger text */
+    font-size: 1.35em;
+    line-height: 1.5;
     margin: 0 0 1rem 0;
     padding: 0;
-    color: #e8e6e3;
+    color: var(--fg);
 }
 
-/* Style paragraphs within blockquotes */
 blockquote p {
-    font-size: inherit; /* Same size as blockquote */
-    line-height: inherit; /* Same line height as blockquote */
-    margin: 0 0 1em 0; /* Space between paragraphs */
+    font-size: inherit;
+    line-height: inherit;
+    margin: 0 0 1em 0;
 }
 
-/* Remove margin from the last paragraph to avoid extra space */
 blockquote p:last-child {
     margin-bottom: 0;
 }
 
-/* Custom text highlight using the site's accent color */
-.highlight-text {
-    color: #8b4c42;
-    font-weight: normal;
-    font-style: normal; /* Optional: removes italics if the rest of the quote is italicized */
-}
-
-/* For poetry or special formatting with line breaks */
 blockquote p br {
-    line-height: inherit; /* Maintain consistent line spacing */
+    line-height: inherit;
 }
 
-blockquote blockquote { 
-    font-size: 1.0em; /* Maintain consistent font size for nested block quotes */
-    border-left: 4px solid #6b3426; /* Darker border than main blockquotes */
+/* Nested blockquotes */
+blockquote blockquote {
+    font-size: 1.0em;
+    border-left: 4px solid var(--accent-dk);
     margin-left: 1rem;
-    padding-left: 1rem; /* Add this line to offset from the border */
+    padding-left: 1rem;
+}
+
+/* Optional drop cap — opt in with class="quote-entry has-dropcap" */
+.quote-entry.has-dropcap blockquote::first-letter {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3em;
+    float: left;
+    line-height: 0.9;
+    padding: 0.1em 0.1em 0 0;
+    color: var(--accent);
+}
+
+/* Custom highlight inside quotes */
+.highlight-text {
+    color: var(--accent);
+    font-weight: normal;
+    font-style: normal;
 }
 
 .source {
     text-align: right;
-    font-size: 1.3em; /* Increased from 1.2em */
-    color: #b8b5b2; /* Muted color for attribution */
+    font-size: 1.3em;
+    color: var(--fg-muted);
     margin-top: 1rem;
-    line-height: 1.3; /* Slightly increased */
+    line-height: 1.3;
 }
 
-.work-title {
-    font-style: italic;
-    line-height: 1.3; /* Slightly increased */
-}
-
-/* Ensure work titles are italicized in all contexts */
+.work-title,
 span.work-title,
 .source .work-title,
 #quote-source .work-title {
     font-style: italic;
+    line-height: 1.3;
 }
 
-/* Dividers */
+/* --- Decorative dividers -------------------------------------------- */
 .divider {
     border: none;
+    background: none;
     height: 1px;
     margin: 4rem auto;
     width: 70%;
     position: relative;
     overflow: visible;
-    background: none !important; /* Forces transparency so no solid line shows */
 }
 
-/* Remove the conflicting colored background from the specific hr rule */
-hr.divider {
-    background-color: transparent !important;
-}
-
-/* The Line - Now matches the accent color */
 .divider::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: linear-gradient(to right, transparent, #8b4c42, transparent);
-    
-    /* The Mask: Cuts the hole in the center */
+    inset: 0;
+    background-image: linear-gradient(to right, transparent, var(--accent), transparent);
     -webkit-mask-image: linear-gradient(to right, black calc(50% - 25px), transparent calc(50% - 25px), transparent calc(50% + 25px), black calc(50% + 25px));
-    mask-image: linear-gradient(to right, black calc(50% - 25px), transparent calc(50% - 25px), transparent calc(50% + 25px), black calc(50% + 25px));
+            mask-image: linear-gradient(to right, black calc(50% - 25px), transparent calc(50% - 25px), transparent calc(50% + 25px), black calc(50% + 25px));
 }
 
-/* The Ornament */
 .divider::after {
     content: "❧";
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: transparent;
-    color: #8b4c42; /* Matches the line color now */
+    color: var(--accent);
     font-family: serif;
     font-size: 1.5em;
-    padding: 0;
 }
 
-hr.divider {
-    background-color: #8b4c42;
+/* Lighter divider used in CV between sections */
+.divider-light {
+    border: none;
+    height: 1px;
+    background-color: #333;
+    margin: 1.5rem auto;
+    width: 100%;
 }
 
-/* Categories Grid */
+/* --- Categories grid (commonplace + reading lists) ------------------ */
 .categories-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -236,23 +268,24 @@ hr.divider {
 }
 
 .category-link {
-    color: #d4d1ce;
+    color: var(--fg-link);
     text-decoration: none;
     padding: 0.5rem;
     display: block;
     border-radius: 4px;
     transition: all 0.3s ease;
     border-left: 3px solid transparent;
-    font-size: 1.5em; /* Increased from 1.4em */
+    font-size: 1.5em;
 }
 
 .category-link:hover {
     background-color: #2a2a2a;
-    color: #f5f3f0;
-    border-left-color: #8b4c42;
+    color: var(--fg-strong);
+    border-left-color: var(--accent);
     padding-left: 0.75rem;
 }
 
+/* --- Commentary block ----------------------------------------------- */
 .commentary-section {
     margin: 2rem 0;
     padding: 1.5rem;
@@ -261,12 +294,12 @@ hr.divider {
     border-left: 4px solid #6a5d5d;
     font-style: normal;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 1.1em; 
+    font-size: 1.1em;
     line-height: 1.6;
-    color: #d4d1ce; 
+    color: var(--fg-link);
 }
 
-/* Search Styles */
+/* --- Search ---------------------------------------------------------- */
 .search-container {
     margin-top: 1.5rem;
     position: relative;
@@ -275,29 +308,22 @@ hr.divider {
     margin-right: auto;
 }
 
-.search-form {
-    margin: 0;
-}
+.search-form { margin: 0; }
 
 .search-input {
     width: 100%;
     padding: 0.75rem;
-    font-size: 1.2em; /* Increased from 1.1em */
-    border: 2px solid #444;
+    font-size: 1.2em;
+    border: 2px solid var(--rule);
     border-radius: 6px;
     background-color: #2a2a2a;
-    color: #e8e6e3;
+    color: var(--fg);
     outline: none;
     transition: border-color 0.3s ease;
+    box-sizing: border-box;
 }
-
-.search-input:focus {
-    border-color: #8b4c42;
-}
-
-.search-input::placeholder {
-    color: #888;
-}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--fg-faint); }
 
 .search-results {
     position: absolute;
@@ -305,112 +331,87 @@ hr.divider {
     left: 0;
     right: 0;
     background-color: #2a2a2a;
-    border: 1px solid #444;
+    border: 1px solid var(--rule);
     border-radius: 6px;
     margin-top: 0.25rem;
     max-height: 400px;
     overflow-y: auto;
     z-index: 1000;
     display: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-
 .result-item {
     padding: 1rem;
     border-bottom: 1px solid #333;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
-
-.result-item:hover {
-    background-color: #333;
-}
-
-.result-item:last-child {
-    border-bottom: none;
-}
-
+.result-item:hover { background-color: #333; }
+.result-item:last-child { border-bottom: none; }
 .result-title {
     font-weight: bold;
-    color: #f5f3f0;
+    color: var(--fg-strong);
     margin-bottom: 0.25rem;
-    font-size: 1.4em; /* Increased from 1.3em */
+    font-size: 1.4em;
 }
-
 .result-preview {
-    color: #b8b5b2;
-    font-size: 1.05em; /* Increased from 0.95em */
+    color: var(--fg-muted);
+    font-size: 1.05em;
 }
-
 .highlight {
-    background-color: #8b4c42;
+    background-color: var(--accent);
     color: #fff;
     padding: 0 0.2rem;
     border-radius: 2px;
 }
 
-/* Navigation Links */
+/* --- Page navigation links ------------------------------------------ */
 .navigation-links {
     text-align: center;
     margin: 3rem 0 2rem 0;
     padding-top: 2rem;
-    border-top: 1px solid #444;
+    border-top: 1px solid var(--rule);
 }
-
 .navigation-links a {
-    color: #d4d1ce;
+    color: var(--fg-link);
     text-decoration: none;
     margin: 0 0.5rem;
     transition: color 0.3s ease;
-    font-size: 1.5em; /* Increased from 1.4em */
+    font-size: 1.5em;
 }
+.navigation-links a:hover { color: var(--fg-strong); }
 
-.navigation-links a:hover {
-    color: #f5f3f0;
-}
-
-.back-to-commonplace {
-    margin-bottom: 2rem;
-}
-
+.back-to-commonplace { margin-bottom: 2rem; }
 .back-to-commonplace a {
-    color: #d4d1ce;
+    color: var(--fg-link);
     text-decoration: none;
     transition: color 0.3s ease;
-    font-size: 1.3em; /* Increased from 1.2em */
+    font-size: 1.3em;
 }
+.back-to-commonplace a:hover { color: var(--fg-strong); }
 
-.back-to-commonplace a:hover {
-    color: #f5f3f0;
-}
-
-/* Daily Quote Styles */
+/* --- Daily quote (index page) --------------------------------------- */
 #quote-of-the-day {
     margin-bottom: 2rem;
-    font-size: 1.3em; /* Increased from 1.2em */
-    line-height: 1.5; /* Slightly increased */
+    font-size: 1.3em;
+    line-height: 1.5;
 }
 
 #quote-header {
-    color: #b8b5b2;
-    font-size: 1.2em; /* Increased from 1.1em */
+    color: var(--fg-muted);
+    font-size: 1.2em;
     margin-bottom: 1rem;
 }
-
 #quote-header a {
-    color: #d4d1ce;
+    color: var(--fg-link);
     transition: color 0.3s ease;
 }
+#quote-header a:hover { color: var(--fg-strong); }
 
-#quote-header a:hover {
-    color: #f5f3f0;
-}
-
-/* Quote Attribution with Play Button */
 .quote-attribution {
     display: flex;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 1rem;
     font-style: italic;
 }
 
@@ -418,305 +419,96 @@ hr.divider {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #444; /* Softer button color */
-    color: #e8e6e3;
+    background: #444;
+    color: var(--fg);
     border: none;
     border-radius: 50%;
-    width: 42px; /* Increased from 40px */
-    height: 42px; /* Increased from 40px */
+    width: 42px;
+    height: 42px;
     margin-left: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     vertical-align: middle;
-    font-size: 1.2em; /* Increased from 1.1em */
+    font-size: 1.2em;
 }
-
 #play-button:hover {
     background: #555;
     transform: scale(1.05);
 }
-
 #play-button.playing {
-    background: #8b4c42; /* Use accent color when playing */
+    background: var(--accent);
+}
+#play-button:focus-visible,
+#refresh-button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
-/* Center the Daily Selection heading */
 .daily-selection-heading {
     text-align: center;
     margin: 30px 0;
-    font-size: 2.2em; /* Increased from 2.0em */
+    font-size: 2.2em;
 }
 
-/* Disclaimer Style */
+#refresh-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 0.7em;
+    vertical-align: middle;
+    margin-left: 10px;
+    transition: transform 0.5s ease;
+    padding: 0.25rem;
+}
+
+/* --- Disclaimer ------------------------------------------------------ */
 .disclaimer {
     text-align: center;
     font-size: 0.9em;
-    color: #888; /* Muted gray */
+    color: var(--fg-faint);
     margin-top: 2rem;
     padding-top: 1rem;
-    border-top: 1px solid #333; /* Subtle separator line */
+    border-top: 1px solid #333;
     font-style: italic;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .categories-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .container {
-        padding: 1rem;
-    }
-    
-    header h1 {
-        font-size: 2.6em; /* Increased from 2.3em */
-    }
-    
-    .search-container {
-        max-width: 100%;
-    }
-    
-    /* Mobile text should now be even more readable */
-    body {
-        font-size: 115%; /* Increased from 105% */
-    }
-    
-    blockquote {
-        font-size: 1.5em; /* Increased from 1.4em */
-    }
-}
-/* --- CV Page Styles --- */
-
-.cv-container {
-    max-width: 850px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-}
-
-.cv-contact-info {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #b8b5b2;
-    font-size: 1.1em;
-    line-height: 1.4; /* Tighter line height */
-}
-
-.cv-contact-info p {
-    margin: 0.2rem 0; /* Reduced margin between contact lines */
-}
-
-.cv-contact-info a {
-    color: #d4d1ce;
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-
-.cv-contact-info a:hover {
-    color: #8b4c42;
-}
-
-.cv-contact-info .separator {
-    color: #8b4c42;
-    margin: 0 0.5rem;
-}
-
-.cv-section {
-    margin-bottom: 2rem; /* Reduced from 2.5rem */
-}
-
-.cv-section h3 {
-    border-bottom: 1px solid #444;
-    padding-bottom: 0.25rem;
-    color: #f5f3f0;
-    margin-bottom: 1rem; /* Reduced from 1.5rem */
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    font-size: 1.2em;
-}
-
-.cv-item {
-    display: flex;
-    margin-bottom: 1rem; /* Reduced from 1.5rem for tighter spacing */
-}
-
-.cv-date {
-    flex: 0 0 140px;
-    color: #8b4c42;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 1em;
-    padding-right: 1rem;
-    font-weight: 400; /* Normal weight */
-    line-height: 1.3;
-}
-
-.cv-content {
-    flex: 1;
-}
-
-.cv-main-text {
-    color: #e8e6e3;
-    font-weight: 500; /* CHANGED: Reduced from bold (700) to medium (500) */
-    display: block;
-    margin-bottom: 0.1rem; /* Reduced spacing below title */
-    font-size: 1.1em;
-    line-height: 1.3; /* Single spacing */
-}
-
-.cv-sub-text {
-    color: #d4d1ce;
-    display: block;
-    margin-bottom: 0.2rem;
-    font-style: italic;
-    line-height: 1.3; /* Single spacing */
-}
-
-.cv-location {
-    display: block;
-    color: #666;
-    font-size: 0.9em;
-    margin-top: 0.1rem;
-    line-height: 1.3;
-}
-
-.cv-detail {
-    font-size: 1em;
-    color: #b8b5b2;
-    line-height: 1.35; /* Near single spacing */
-    margin-top: 0.2rem;
-}
-
-/* Subsection titles like "Nonfiction" */
-.cv-subsection h4 {
-    color: #d4d1ce;
-    margin-bottom: 0.5rem;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 1.05em;
-    margin-top: 0;
-    font-weight: 500;
-}
-
-.cv-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1rem 0;
-}
-
-.cv-list li {
-    margin-bottom: 0.5rem; /* Reduced item spacing */
-    color: #b8b5b2;
-    line-height: 1.35; /* Near single spacing */
-    padding-left: 1rem;
-    border-left: 2px solid #333;
-}
-
-.cv-simple-list {
-    list-style: none;
-    padding: 0;
-}
-
-.cv-simple-list li {
-    margin-bottom: 0.3rem; /* Tighter list spacing */
-    color: #b8b5b2;
-    line-height: 1.35;
-}
-
-.cv-simple-list strong {
-    color: #d4d1ce;
-    font-weight: 500; /* Reduced bold here too */
-}
-
-.cv-interests-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-}
-
-.cv-interests-grid ul {
-    margin-top: 0.3rem;
-    padding-left: 1.2rem;
-    color: #b8b5b2;
-    line-height: 1.3;
-}
-
-.cv-interests-grid ul li {
-    margin-bottom: 0.2rem;
-}
-
-/* Light divider for sections */
-.divider-light {
-    border: none;
-    height: 1px;
-    background-color: #333;
-    margin: 1.5rem auto; /* Reduced vertical space */
-    width: 100%;
-}
-
-/* Current page indicator in nav */
-nav a.current-page {
-    color: #f5f3f0;
-    border-bottom: 2px solid #8b4c42;
-}
-
-@media (max-width: 700px) {
-    .cv-item {
-        flex-direction: column;
-    }
-    .cv-date {
-        margin-bottom: 0.1rem;
-        color: #b8654a;
-    }
-    .cv-interests-grid {
-        grid-template-columns: 1fr;
-    }
-}
-/* ============================================
-   READING LIST STYLES
-   Append this block to the end of stylesheet.css
-   ============================================ */
-
-/* --- List Entry --- */
+/* --- Reading list entries (existing pattern preserved) -------------- */
 .list-entry {
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background-color: #242424;
+    background-color: var(--bg-card);
     border-radius: 8px;
-    border-left: 4px solid #8b4c42;
+    border-left: 4px solid var(--accent);
 }
-
 .list-entry-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 0.5rem;
 }
-
 .list-entry-title {
     font-family: 'DM Serif Display', serif;
     font-size: 1.4em;
     font-weight: 400;
-    color: #f5f3f0;
+    color: var(--fg-strong);
     margin: 0;
     font-style: italic;
 }
-
 .list-entry-creator {
-    color: #b8b5b2;
+    color: var(--fg-muted);
     font-size: 1.15em;
     margin: 0.25rem 0 0 0;
 }
-
 .list-entry-note {
-    color: #d4d1ce;
+    color: var(--fg-link);
     font-size: 1.1em;
     line-height: 1.6;
     margin: 0.75rem 0 0 0;
 }
 
-/* --- Media Type Badges --- */
+/* Media-type badges */
 .media-badge {
     display: inline-block;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -729,62 +521,237 @@ nav a.current-page {
     white-space: nowrap;
     flex-shrink: 0;
 }
+.badge-book  { background-color: #3a2a2a; color: #d4886a; border: 1px solid #5a3a3a; }
+.badge-film  { background-color: #2a2a3a; color: #7a8ac4; border: 1px solid #3a3a5a; }
+.badge-story { background-color: #2a3a2a; color: #7ab87a; border: 1px solid #3a5a3a; }
+.badge-play  { background-color: #3a3a2a; color: #c4b87a; border: 1px solid #5a5a3a; }
+.badge-essay { background-color: #2a3a3a; color: #7ab8b8; border: 1px solid #3a5a5a; }
+.badge-poem  { background-color: #3a2a3a; color: #b87ab8; border: 1px solid #5a3a5a; }
+.badge-tv    { background-color: #332a2a; color: #c49a7a; border: 1px solid #4a3a3a; }
+.badge-music { background-color: #2a2a33; color: #9a9ac4; border: 1px solid #3a3a4a; }
 
-.badge-book {
-    background-color: #3a2a2a;
-    color: #d4886a;
-    border: 1px solid #5a3a3a;
+/* --- CV-specific ----------------------------------------------------- */
+.cv-container {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
 }
 
-.badge-film {
-    background-color: #2a2a3a;
-    color: #7a8ac4;
-    border: 1px solid #3a3a5a;
+.cv-contact-info {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--fg-muted);
+    font-size: 1.1em;
+    line-height: 1.4;
+}
+.cv-contact-info p { margin: 0.2rem 0; }
+.cv-contact-info a {
+    color: var(--fg-link);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+.cv-contact-info a:hover { color: var(--accent); }
+.cv-contact-info .separator {
+    color: var(--accent);
+    margin: 0 0.5rem;
 }
 
-.badge-story {
-    background-color: #2a3a2a;
-    color: #7ab87a;
-    border: 1px solid #3a5a3a;
+.cv-section { margin-bottom: 2rem; }
+
+.cv-section h3 {
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.25rem;
+    color: var(--fg-strong);
+    margin-bottom: 1rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 1.2em;
 }
 
-.badge-play {
-    background-color: #3a3a2a;
-    color: #c4b87a;
-    border: 1px solid #5a5a3a;
+.cv-item {
+    display: flex;
+    margin-bottom: 1rem;
 }
 
-.badge-essay {
-    background-color: #2a3a3a;
-    color: #7ab8b8;
-    border: 1px solid #3a5a5a;
+.cv-date {
+    flex: 0 0 140px;
+    color: var(--accent);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1em;
+    padding-right: 1rem;
+    font-weight: 400;
+    line-height: 1.3;
 }
 
-.badge-poem {
-    background-color: #3a2a3a;
-    color: #b87ab8;
-    border: 1px solid #5a3a5a;
+.cv-content { flex: 1; }
+
+.cv-main-text {
+    color: var(--fg);
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.1rem;
+    font-size: 1.1em;
+    line-height: 1.3;
+}
+.cv-sub-text {
+    color: var(--fg-link);
+    display: block;
+    margin-bottom: 0.2rem;
+    font-style: italic;
+    line-height: 1.3;
+}
+.cv-location {
+    display: block;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 0.1rem;
+    line-height: 1.3;
+}
+.cv-detail {
+    font-size: 1em;
+    color: var(--fg-muted);
+    line-height: 1.35;
+    margin-top: 0.2rem;
 }
 
-.badge-tv {
-    background-color: #332a2a;
-    color: #c49a7a;
-    border: 1px solid #4a3a3a;
+.cv-subsection h4 {
+    color: var(--fg-link);
+    margin-bottom: 0.5rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1.05em;
+    margin-top: 0;
+    font-weight: 500;
 }
 
-.badge-music {
-    background-color: #2a2a33;
-    color: #9a9ac4;
-    border: 1px solid #3a3a4a;
+.cv-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+.cv-list li {
+    margin-bottom: 0.5rem;
+    color: var(--fg-muted);
+    line-height: 1.35;
+    padding-left: 1rem;
+    border-left: 2px solid #333;
 }
 
-/* --- Responsive adjustments --- */
+.cv-simple-list {
+    list-style: none;
+    padding: 0;
+}
+.cv-simple-list li {
+    margin-bottom: 0.3rem;
+    color: var(--fg-muted);
+    line-height: 1.35;
+}
+.cv-simple-list strong {
+    color: var(--fg-link);
+    font-weight: 500;
+}
+
+.cv-interests-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+.cv-interests-grid ul {
+    margin-top: 0.3rem;
+    padding-left: 1.2rem;
+    color: var(--fg-muted);
+    line-height: 1.3;
+}
+.cv-interests-grid ul li { margin-bottom: 0.2rem; }
+
+/* --- Responsive ------------------------------------------------------ */
 @media (max-width: 768px) {
-    .list-entry-title {
-        font-size: 1.3em;
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
+    .container { padding: 1rem; }
+    header h1 { font-size: 2.6em; }
+    .search-container { max-width: 100%; }
+    body { font-size: 115%; }
+    blockquote { font-size: 1.5em; }
+    .cv-interests-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .cv-item { flex-direction: column; }
+    .cv-date { flex: none; margin-bottom: 0.25rem; }
+    .list-entry-title { font-size: 1.3em; }
+    .list-entry-header { flex-wrap: wrap; }
+}
 
-    .list-entry-header {
+@media (max-width: 600px) {
+    nav {
+        padding: 1rem 0.5rem;
+        display: flex;
         flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+    nav a {
+        margin: 0;
+        font-size: 1.15em;
+        padding: 0.4rem 0.7rem;
+    }
+    header h1 { font-size: 2.2em; }
+    .subtitle { font-size: 1.6em; }
+}
+
+/* --- Print (CV) ------------------------------------------------------ */
+@media print {
+    :root {
+        --bg: #fff;
+        --fg: #000;
+        --fg-strong: #000;
+        --fg-muted: #333;
+        --fg-link: #000;
+        --accent: #6b3426;
+        --rule: #999;
+    }
+    body {
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 11pt;
+        line-height: 1.4;
+    }
+    body::before { display: none; }
+    nav,
+    .navigation-links,
+    .skip-link,
+    #play-button,
+    #refresh-button,
+    .search-container { display: none !important; }
+    header {
+        border-bottom: 1px solid #000;
+        padding: 0.5rem 0 1rem;
+    }
+    header h1 { color: #000; font-size: 2em; }
+    .subtitle { color: #333; font-size: 1.2em; }
+    a { color: #000; text-decoration: none; }
+    a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.85em;
+        color: #555;
+    }
+    .cv-section { margin-bottom: 1rem; }
+    .cv-section h3 {
+        color: #000;
+        border-color: #000;
+        page-break-after: avoid;
+    }
+    .cv-item { page-break-inside: avoid; }
+    .divider, .divider-light {
+        background: none !important;
+        border-top: 1px solid #ccc !important;
+        margin: 1rem auto !important;
+    }
+    .divider::before, .divider::after { display: none; }
+    .quote-entry {
+        background: #fff;
+        border-left: 2px solid #000;
+        page-break-inside: avoid;
     }
 }

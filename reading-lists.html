@@ -1,11 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reading Lists - David Kendall Casey</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Lists — David Kendall Casey</title>
+    <meta name="description" content="Curated reading lists organized by theme.">
+    <link rel="canonical" href="https://davidkendallcasey.github.io/personalwebsite/reading-lists.html">
+    <link rel="icon" type="image/png" href="images/favicon.png">
     <link rel="stylesheet" href="stylesheet.css">
+
+    <meta property="og:title" content="Reading Lists — David Kendall Casey">
+    <meta property="og:description" content="Curated reading lists organized by theme.">
+    <meta property="og:image" content="https://davidkendallcasey.github.io/personalwebsite/images/DKC.png">
+    <meta property="og:url" content="https://davidkendallcasey.github.io/personalwebsite/reading-lists.html">
+    <meta property="og:type" content="website">
 </head>
 <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+
     <header>
         <h1>David Kendall Casey</h1>
         <p class="subtitle">Reading Lists</p>
@@ -19,7 +31,7 @@
         <a href="projects.html">Projects</a>
     </nav>
 
-    <main class="container">
+    <main id="main" class="container">
         <h2>Reading Lists</h2>
 
         <div>
@@ -28,22 +40,15 @@
 
         <hr class="divider">
 
+        <!--
+          Lists fill columns left-to-right. Add new themes here as separate
+          .category-item blocks; CSS auto-flows them into the 3-column grid.
+        -->
         <div class="categories-grid">
             <div>
                 <div class="category-item">
                     <a href="list-existentialism.html" class="category-link">Existentialism</a>
                 </div>
-                <!-- Add new themes here following the same pattern:
-                <div class="category-item">
-                    <a href="list-stoicism.html" class="category-link">Stoicism</a>
-                </div>
-                -->
-            </div>
-            <div>
-                <!-- Second column of themes -->
-            </div>
-            <div>
-                <!-- Third column of themes -->
             </div>
         </div>
 
@@ -54,7 +59,6 @@
         </div>
     </main>
 
-    <!-- Include the dynamic search script -->
     <script src="dynamic-search.js"></script>
 </body>
 </html>
