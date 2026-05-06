@@ -185,12 +185,13 @@
       const today = todayISO();
 
       if (!forceRefresh) {
-        const cached = safeParse(localStorage.getItem(CACHE_KEY), null);
-        if (cached && cached.date === today) {
-          displayQuote(cached.quote);
-          return;
-        }
-      }
+		const cached = safeParse(localStorage.getItem(CACHE_KEY), null);
+		if (cached && cached.date === today && cached.quote && cached.quote.quoteHTML) {
+			displayQuote(cached.quote);
+		return;
+		}
+		if (cached) localStorage.removeItem(CACHE_KEY);
+	}
 
       const all = await loadAllQuotes();
       if (myToken !== fetchToken) return;        // a newer call superseded us
@@ -244,40 +245,6 @@ function pickVoice() {
   if (maleByName) return maleByName;
 
   return voices.find(v => v.lang.startsWith('en')) || voices[0];
-}
-	  const voices = speechSynthesis.getVoices();
-	  if (!voices.length) return null;
-	  const maleBritishNames = /\b(George|Daniel|Oliver|Ryan|Thomas|Arthur|James)\b/i;
-	  
-	  const britishNames = /\b(Hazel|Susan|Kate|Serena|Libby|Sonia|Hollie|Emma|Mia|Abbi)\b/i;
-	  
-	  const neuralBritishMale = voices.find(v =>
-		v.lang.startsWith('en-GB') &&
-		/natural|neural|enhanced|premium|online/i.test(v.name) &&
-		maleBritishNames.test(v.name)
-	  );
-	  
-	  if (neuralBritishMale) return neuralBritishMale;
-	  
-	  const britishMale = voices.find(v =>
-		v.lang.startsWith('en-GB') && maleBritishNames.test(v.name)
-	  );
-	  
-	  if (britishMale) return britishMale;
-	  
-	  const anyMaleGB = voices.find(v =>
-		v.lang.startsWith('en-GB') && !britishNames.test(v.name)
-	  );
-	  
-	  if (anyMaleGB) return anyMaleGB;
-
-	  const anyBritish = voices.find(v => v.lang.startsWith('en-GB'));
-	  if (anyBritish) return anyBritish;
-
-	  const maleByName = voices.find(v => maleBritishNames.test(v.name));
-	  if (maleByName) return maleByName;
-
-	  return voices.find(v => v.lang.startsWith('en')) || voices[0];
 }
 
     function setupVoices() {
