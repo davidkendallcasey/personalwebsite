@@ -758,3 +758,28 @@ span.work-title,
         page-break-inside: avoid;
     }
 }
+/* --- Bibliography list (reading lists) ------------------------------ */
+.bibliography {
+    margin: 2rem 0;
+}
+
+.bib-entry {
+    margin-bottom: 1.5rem;
+}
+
+.bib-citation {
+    text-indent: -2em;
+    padding-left: 2em;
+    margin: 0;
+    line-height: 1.6;
+    font-size: 1.15em;
+    color: var(--fg);
+}
+
+.bib-note {
+    margin: 0.4rem 0 0 2em;
+    color: var(--fg-muted);
+    font-size: 0.95em;
+    line-height: 1.5;
+    font-style: italic;
+}
